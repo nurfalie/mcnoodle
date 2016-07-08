@@ -8,6 +8,8 @@ class mcnoodle
  public:
   mcnoodle(const size_t k, const size_t n, const size_t t);
   ~mcnoodle();
+  void prepareP(void);
+  void prepareS(void);
 
  private:
   boost::numeric::ublas::matrix<float> m_P;
@@ -19,8 +21,6 @@ class mcnoodle
   size_t m_k;
   size_t m_n;
   size_t m_t;
-  void prepareP(void);
-  void prepareS(void);
 };
 
 #endif
