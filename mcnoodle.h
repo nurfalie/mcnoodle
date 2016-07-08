@@ -10,10 +10,16 @@ class mcnoodle
   ~mcnoodle();
 
  private:
-  boost::numeric::ublas::matrix<int> S;
+  boost::numeric::ublas::matrix<float> m_P;
+  boost::numeric::ublas::matrix<float> m_S; /*
+					    ** BOOST type-checking will
+					    ** raise an exception unless
+					    ** we're using real numbers.
+					    */
   size_t m_k;
   size_t m_n;
   size_t m_t;
+  void prepareP(void);
   void prepareS(void);
 };
 
