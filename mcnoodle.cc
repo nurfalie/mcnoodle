@@ -26,6 +26,10 @@ mcnoodle::~mcnoodle()
 
 void mcnoodle::prepareP(void)
 {
+  /*
+  ** Generate an n x n random permutation matrix and its inverse.
+  */
+
   boost::numeric::ublas::matrix<float> P
     (m_n, m_n, 0); /*
 		   ** BOOST type-checking may
@@ -74,6 +78,10 @@ void mcnoodle::prepareP(void)
 
 void mcnoodle::prepareS(void)
 {
+  /*
+  ** Generate a random k x k binary non-singular matrix and its inverse.
+  */
+
   boost::numeric::ublas::matrix<float> S; /*
 					  ** BOOST type-checking may
 					  ** raise an exception unless
