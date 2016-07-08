@@ -3,24 +3,24 @@
 
 #include <boost/numeric/ublas/matrix.hpp>
 
+typedef int mcnoodble_matrix_element_type_t;
+
 class mcnoodle
 {
  public:
-  mcnoodle(const size_t k, const size_t n, const size_t t);
+  mcnoodle(const std::size_t k, const std::size_t n, const std::size_t t);
   ~mcnoodle();
   void prepareP(void);
   void prepareS(void);
 
  private:
-  boost::numeric::ublas::matrix<float> m_P;
-  boost::numeric::ublas::matrix<float> m_S; /*
-					    ** BOOST type-checking will
-					    ** raise an exception unless
-					    ** we're using real numbers.
-					    */
-  size_t m_k;
-  size_t m_n;
-  size_t m_t;
+  boost::numeric::ublas::matrix<mcnoodble_matrix_element_type_t> m_P;
+  boost::numeric::ublas::matrix<mcnoodble_matrix_element_type_t> m_Pinv;
+  boost::numeric::ublas::matrix<mcnoodble_matrix_element_type_t> m_S;
+  boost::numeric::ublas::matrix<mcnoodble_matrix_element_type_t> m_Sinv;
+  std::size_t m_k;
+  std::size_t m_n;
+  std::size_t m_t;
 };
 
 #endif
