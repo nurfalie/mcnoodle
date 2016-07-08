@@ -9,6 +9,14 @@ class mcnoodle
 {
  public:
   mcnoodle(const std::size_t k, const std::size_t n, const std::size_t t);
+  mcnoodle(const boost::numeric::ublas::
+	   matrix<mcnoodble_matrix_element_type_t> &P,
+	   const boost::numeric::ublas::
+	   matrix<mcnoodble_matrix_element_type_t> &Pinv,
+	   const boost::numeric::ublas::
+	   matrix<mcnoodble_matrix_element_type_t> &S,
+	   const boost::numeric::ublas::
+	   matrix<mcnoodble_matrix_element_type_t> &Sinv);
   ~mcnoodle();
 
   size_t pSize(void) const
