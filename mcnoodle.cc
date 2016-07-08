@@ -42,23 +42,22 @@ void mcnoodle::prepareP(void)
   ** 0 ... 0 ... 1 ... 0 ...
   ** 0 ... 0 ... 0 ... 0 ...
   ** 0 ... 0 ... 0 ... 1 ...
+  ** ...
   */
 
   for(std::size_t i = 0; i < P.size1(); i++)
-    {
-      do
-	{
-	  std::size_t j = distribution(random_device) % P.size2();
+    do
+      {
+	std::size_t j = distribution(random_device) % P.size2();
 
-	  if(indexes.find(j) == indexes.end())
-	    {
-	      P(i, j) = 1;
-	      indexes[j] = 0;
-	      break;
-	    }
-	}
-      while(true);
-    }
+	if(indexes.find(j) == indexes.end())
+	  {
+	    P(i, j) = 1;
+	    indexes[j] = 0;
+	    break;
+	  }
+      }
+    while(true);
 
   /*
   ** A permutation matrix always has an inverse.
