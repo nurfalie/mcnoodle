@@ -3,6 +3,9 @@ extern "C"
 #include <inttypes.h>
 }
 
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/iostreams/device/array.hpp>
+#include <boost/iostreams/stream.hpp>
 #include <boost/nondet_random.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/lu.hpp>
@@ -18,6 +21,10 @@ mcnoodle::mcnoodle(const std::size_t k,
   m_k = k;
   m_n = n;
   m_t = t;
+  m_P.resize(m_n, m_n);
+  m_Pinv.resize(m_n, m_n);
+  m_S.resize(m_k, m_k);
+  m_Sinv.resize(m_k, m_k);
 }
 
 mcnoodle::~mcnoodle()
@@ -97,4 +104,39 @@ void mcnoodle::prepareS(void)
       S(i, j) = static_cast<float> (distribution(random_device) % 2);
 
   m_S = S;
+}
+
+void mcnoodle::serialize
+(char *buffer,
+ const size_t buffer_size,
+ const boost::numeric::ublas::matrix<mcnoodble_matrix_element_type_t> &m)
+{
+  if(!buffer || buffer_size <= 0)
+    return;
+
+  boost::iostreams::array_sink sink(buffer, buffer_size);
+  boost::iostreams::stream<boost::iostreams::array_sink> source(sink);
+  boost::archive::binary_oarchive archive(source);
+
+  archive << m;
+}
+
+void mcnoodle::serializeP(char *buffer, const size_t buffer_size)
+{
+  serialize(buffer, buffer_size, m_P);
+}
+
+void mcnoodle::serializePinv(char *buffer, const size_t buffer_size)
+{
+  serialize(buffer, buffer_size, m_Pinv);
+}
+
+void mcnoodle::serializeS(char *buffer, const size_t buffer_size)
+{
+  serialize(buffer, buffer_size, m_S);
+}
+
+void mcnoodle::serializeSinv(char *buffer, const size_t buffer_size)
+{
+  serialize(buffer, buffer_size, m_Sinv);
 }

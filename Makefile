@@ -3,7 +3,7 @@ CXXFLAGS = -fPIC -Wall -Wconversion -Werror -Wextra \
 	   -Wshadow -Wsign-conversion -Wstrict-overflow=5 \
 	   -mtune=native
 
-LIBRARIES = -lboost_random -lboost_system
+LIBRARIES = -lboost_random -lboost_serialization -lboost_system
 
 OBJECT_FILES = mcnoodle.o
 
