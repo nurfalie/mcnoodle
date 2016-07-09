@@ -129,7 +129,7 @@ void mcnoodle::serialize
   archive << m;
 }
 
-void mcnoodle::serializeP(char *buffer, const size_t buffer_size)
+void mcnoodle::serializeGcar(char *buffer, const size_t buffer_size)
 {
   serialize(buffer, buffer_size, m_P);
 }
@@ -137,11 +137,6 @@ void mcnoodle::serializeP(char *buffer, const size_t buffer_size)
 void mcnoodle::serializePinv(char *buffer, const size_t buffer_size)
 {
   serialize(buffer, buffer_size, m_Pinv);
-}
-
-void mcnoodle::serializeS(char *buffer, const size_t buffer_size)
-{
-  serialize(buffer, buffer_size, m_S);
 }
 
 void mcnoodle::serializeSinv(char *buffer, const size_t buffer_size)

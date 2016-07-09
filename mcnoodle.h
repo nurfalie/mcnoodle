@@ -26,9 +26,8 @@ class mcnoodle
 
   void prepareP(void);
   void prepareS(void);
-  void serializeP(char *buffer, const size_t buffer_size);
+  void serializeGcar(char *buffer, const size_t buffer_size);
   void serializePinv(char *buffer, const size_t buffer_size);
-  void serializeS(char *buffer, const size_t buffer_size);
   void serializeSinv(char *buffer, const size_t buffer_size);
 
  private:
