@@ -62,7 +62,7 @@ bool mcnoodle::encrypt(const char *plaintext, const size_t plaintext_size,
   if(!ciphertext || !ciphertext_size || !plaintext || plaintext_size <= 0)
     return false;
 
-  if(plaintext_size > CHAR_BIT * m_k)
+  if(CHAR_BIT * plaintext_size > m_k)
     return false;
 
   /*
@@ -70,7 +70,7 @@ bool mcnoodle::encrypt(const char *plaintext, const size_t plaintext_size,
   */
 
   boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> m
-    (1, m_k);
+    (1, m_k, 0);
 
   for(size_t i = 0, k = 0; i < plaintext_size; i++)
     {
