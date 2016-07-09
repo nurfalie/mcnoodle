@@ -3,6 +3,7 @@ extern "C"
 #include <inttypes.h>
 }
 
+#include <bitset>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/iostreams/device/array.hpp>
 #include <boost/iostreams/stream.hpp>
@@ -14,9 +15,9 @@ extern "C"
 
 #include "mcnoodle.h"
 
-mcnoodle::mcnoodle(const std::size_t k,
-		   const std::size_t n,
-		   const std::size_t t)
+mcnoodle::mcnoodle(const size_t k,
+		   const size_t n,
+		   const size_t t)
 {
   m_k = k;
   m_n = n;
@@ -29,9 +30,13 @@ mcnoodle::mcnoodle(const std::size_t k,
 
 mcnoodle::mcnoodle
 (const boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> &Gcar,
- const std::size_t t)
+ const size_t k,
+ const size_t n,
+ const size_t t)
 {
   m_Gcar = Gcar;
+  m_k = k;
+  m_n = n;
   m_t = t;
 }
 
@@ -51,6 +56,64 @@ bool mcnoodle::decrypt(const char *ciphertext, const size_t ciphertext_size,
   return ok;
 }
 
+bool mcnoodle::encrypt(const char *plaintext, const size_t plaintext_size,
+		       char *ciphertext, size_t *ciphertext_size)
+{
+  if(!ciphertext || !ciphertext_size || !plaintext || plaintext_size <= 0)
+    return false;
+
+  if(plaintext_size > CHAR_BIT * m_k)
+    return false;
+
+  /*
+  ** Represent the message as a binary vector of length k.
+  */
+
+  boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> m
+    (1, m_k);
+
+  for(size_t i = 0, k = 0; i < plaintext_size; i++)
+    {
+      std::bitset<CHAR_BIT> b(plaintext[i]);
+
+      for(size_t j = 0; j < b.size(); j++, k++)
+	m(0, k) = b[j];
+    }
+
+  /*
+  ** Generate a random binary vector of length n having at most t 1s.
+  */
+
+  boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> z(1, m_n, 0);
+  boost::random::uniform_int_distribution<uint64_t> distribution;
+  boost::random_device random_device;
+  size_t ts = 0;
+
+  for(size_t i = 0; i < z.size2(); i++)
+    {
+      mcnoodle_matrix_element_type_t a = distribution(random_device) % 2;
+
+      if(a == 1)
+	{
+	  ts += 1;
+	  z(0, i) = 1;
+
+	  if(m_t == ts)
+	    break;
+	}
+    }
+
+  /*
+  ** Compute c = mGcar + z.
+  */
+
+  boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> c
+    (1, m_n);
+
+  c = boost::numeric::ublas::prod(m, m_Gcar) + z;
+  return true;
+}
+
 void mcnoodle::prepareP(void)
 {
   /*
@@ -60,7 +123,7 @@ void mcnoodle::prepareP(void)
   boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> P(m_n, m_n, 0);
   boost::random::uniform_int_distribution<uint64_t> distribution;
   boost::random_device random_device;
-  std::map<std::size_t, char> indexes;
+  std::map<size_t, char> indexes;
 
   /*
   ** 0 ... 1 ... 0 ... 0 ...
@@ -71,10 +134,10 @@ void mcnoodle::prepareP(void)
   ** ...
   */
 
-  for(std::size_t i = 0; i < P.size1(); i++)
+  for(size_t i = 0; i < P.size1(); i++)
     do
       {
-	std::size_t j = distribution(random_device) % P.size2();
+	size_t j = distribution(random_device) % P.size2();
 
 	if(indexes.find(j) == indexes.end())
 	  {
@@ -115,8 +178,8 @@ void mcnoodle::prepareS(void)
 
   S.resize(m_k, m_k);
 
-  for(std::size_t i = 0; i < S.size1(); i++)
-    for(std::size_t j = 0; j < S.size2(); j++)
+  for(size_t i = 0; i < S.size1(); i++)
+    for(size_t j = 0; j < S.size2(); j++)
       S(i, j) = static_cast<float> (distribution(random_device) % 2);
 
   m_S = S;

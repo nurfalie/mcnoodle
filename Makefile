@@ -1,6 +1,6 @@
 CXXFLAGS = -fPIC -Wall -Wconversion -Werror -Wextra \
 	   -Wformat=2 -Wno-unused-function -Wpointer-arith \
-	   -Wshadow -Wsign-conversion -Wstrict-overflow=5 \
+	   -Wshadow -Wstrict-overflow=5 \
 	   -mtune=native
 
 LIBRARIES = -lboost_random -lboost_serialization -lboost_system
