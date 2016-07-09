@@ -54,7 +54,7 @@ bool mcnoodle::decrypt(const char *ciphertext, const size_t ciphertext_size,
 void mcnoodle::prepareP(void)
 {
   /*
-  ** Generate an n x n random permutation matrix and its inverse.
+  ** Generate an n x n random permutation matrix and discover its inverse.
   */
 
   boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> P(m_n, m_n, 0);
