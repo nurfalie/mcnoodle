@@ -10,13 +10,8 @@ class mcnoodle
  public:
   mcnoodle(const std::size_t k, const std::size_t n, const std::size_t t);
   mcnoodle(const boost::numeric::ublas::
-	   matrix<mcnoodble_matrix_element_type_t> &P,
-	   const boost::numeric::ublas::
-	   matrix<mcnoodble_matrix_element_type_t> &Pinv,
-	   const boost::numeric::ublas::
-	   matrix<mcnoodble_matrix_element_type_t> &S,
-	   const boost::numeric::ublas::
-	   matrix<mcnoodble_matrix_element_type_t> &Sinv);
+	   matrix<mcnoodble_matrix_element_type_t> &Gcar,
+	   const std::size_t t);
   ~mcnoodle();
 
   size_t pSize(void) const
@@ -37,6 +32,7 @@ class mcnoodle
   void serializeSinv(char *buffer, const size_t buffer_size);
 
  private:
+  boost::numeric::ublas::matrix<mcnoodble_matrix_element_type_t> m_Gcar;
   boost::numeric::ublas::matrix<mcnoodble_matrix_element_type_t> m_P;
   boost::numeric::ublas::matrix<mcnoodble_matrix_element_type_t> m_Pinv;
   boost::numeric::ublas::matrix<mcnoodble_matrix_element_type_t> m_S;

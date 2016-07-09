@@ -28,15 +28,11 @@ mcnoodle::mcnoodle(const std::size_t k,
 }
 
 mcnoodle::mcnoodle
-(const boost::numeric::ublas::matrix<mcnoodble_matrix_element_type_t> &P,
- const boost::numeric::ublas::matrix<mcnoodble_matrix_element_type_t> &Pinv,
- const boost::numeric::ublas::matrix<mcnoodble_matrix_element_type_t> &S,
- const boost::numeric::ublas::matrix<mcnoodble_matrix_element_type_t> &Sinv)
+(const boost::numeric::ublas::matrix<mcnoodble_matrix_element_type_t> &Gcar,
+ const std::size_t t)
 {
-  m_P = P;
-  m_Pinv = Pinv;
-  m_S = S;
-  m_Sinv = Sinv;
+  m_Gcar = Gcar;
+  m_t = t;
 }
 
 mcnoodle::~mcnoodle()
