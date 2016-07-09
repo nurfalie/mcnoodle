@@ -39,6 +39,18 @@ mcnoodle::~mcnoodle()
 {
 }
 
+bool mcnoodle::decrypt(const char *ciphertext, const size_t ciphertext_size,
+		       char *plaintext, size_t *plaintext_size)
+{
+  bool ok = false;
+
+  if(!ciphertext || ciphertext_size <= 0 || !plaintext || !plaintext_size)
+    goto done_label;
+
+ done_label:
+  return ok;
+}
+
 void mcnoodle::prepareP(void)
 {
   /*

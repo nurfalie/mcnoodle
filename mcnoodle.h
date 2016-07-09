@@ -13,6 +13,8 @@ class mcnoodle
 	   matrix<mcnoodle_matrix_element_type_t> &Gcar,
 	   const std::size_t t);
   ~mcnoodle();
+  bool decrypt(const char *ciphertext, const size_t ciphertext_size,
+	       char *plaintext, size_t *plaintext_size);
 
   size_t pSize(void) const
   {
