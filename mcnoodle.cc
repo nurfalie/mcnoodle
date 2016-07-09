@@ -85,6 +85,7 @@ void mcnoodle::prepareP(void)
   /*
   ** (PP^T)ij = Sum(Pik(P^T)kj, k = 1..n) = Sum(PikPjk, k = 1..n).
   ** Sum(PikPjk, k = 1..n) = 1 if i = j, and 0 otherwise (I).
+  ** That is, PP^T = I or the inverse of P is equal to P's transpose.
   */
 
   m_P = P;
