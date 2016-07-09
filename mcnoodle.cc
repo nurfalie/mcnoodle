@@ -28,7 +28,7 @@ mcnoodle::mcnoodle(const std::size_t k,
 }
 
 mcnoodle::mcnoodle
-(const boost::numeric::ublas::matrix<mcnoodble_matrix_element_type_t> &Gcar,
+(const boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> &Gcar,
  const std::size_t t)
 {
   m_Gcar = Gcar;
@@ -45,12 +45,7 @@ void mcnoodle::prepareP(void)
   ** Generate an n x n random permutation matrix and its inverse.
   */
 
-  boost::numeric::ublas::matrix<float> P
-    (m_n, m_n, 0); /*
-		   ** BOOST type-checking may
-		   ** raise an exception unless
-		   ** we're using real numbers.
-		   */
+  boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> P(m_n, m_n, 0);
   boost::random::uniform_int_distribution<uint64_t> distribution;
   boost::random_device random_device;
   std::map<std::size_t, char> indexes;
@@ -118,7 +113,7 @@ void mcnoodle::prepareS(void)
 void mcnoodle::serialize
 (char *buffer,
  const size_t buffer_size,
- const boost::numeric::ublas::matrix<mcnoodble_matrix_element_type_t> &m)
+ const boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> &m)
 {
   if(!buffer || buffer_size <= 0)
     return;
