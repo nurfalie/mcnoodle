@@ -60,7 +60,7 @@ bool mcnoodle::decrypt(const char *ciphertext, const size_t ciphertext_size,
 bool mcnoodle::encrypt(const char *plaintext, const size_t plaintext_size,
 		       char *ciphertext, size_t *ciphertext_size)
 {
-  if(!ciphertext_size || !plaintext || plaintext_size <= 0)
+  if(ciphertext || !ciphertext_size || !plaintext || plaintext_size <= 0)
     return false;
 
   if(CHAR_BIT * plaintext_size > m_k)
