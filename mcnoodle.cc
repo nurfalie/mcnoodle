@@ -19,9 +19,10 @@ mcnoodle::mcnoodle(const size_t k,
 		   const size_t n,
 		   const size_t t)
 {
-  m_k = k;
-  m_n = n;
-  m_t = t;
+  m_k = minimumK(k);
+  m_n = minimumN(n);
+  m_t = minimumT(t);
+  m_Gcar.resize(m_k, m_n);
   m_P.resize(m_n, m_n);
   m_Pinv.resize(m_n, m_n);
   m_S.resize(m_k, m_k);
@@ -35,9 +36,9 @@ mcnoodle::mcnoodle
  const size_t t)
 {
   m_Gcar = Gcar;
-  m_k = k;
-  m_n = n;
-  m_t = t;
+  m_k = minimumK(k);
+  m_n = minimumN(n);
+  m_t = minimumT(t);
 }
 
 mcnoodle::~mcnoodle()
@@ -59,7 +60,7 @@ bool mcnoodle::decrypt(const char *ciphertext, const size_t ciphertext_size,
 bool mcnoodle::encrypt(const char *plaintext, const size_t plaintext_size,
 		       char *ciphertext, size_t *ciphertext_size)
 {
-  if(!ciphertext || !ciphertext_size || !plaintext || plaintext_size <= 0)
+  if(!ciphertext_size || !plaintext || plaintext_size <= 0)
     return false;
 
   if(CHAR_BIT * plaintext_size > m_k)
@@ -111,6 +112,25 @@ bool mcnoodle::encrypt(const char *plaintext, const size_t plaintext_size,
     (1, m_n);
 
   c = boost::numeric::ublas::prod(m, m_Gcar) + z;
+
+  /*
+  ** Place c into ciphertext. The user is responsible for restoring memory.
+  */
+
+  *ciphertext_size = static_cast<size_t> (std::ceil(c.size2() / CHAR_BIT));
+  ciphertext = new char[*ciphertext_size];
+
+  for(size_t i = 0, k = 0; i < c.size2(); k++)
+    {
+      char a = 0;
+
+      for(size_t j = 0; i < c.size2() && j < CHAR_BIT; i++, j++)
+	if((c(0, i) >> (j + 1)) & 1)
+	  a |= static_cast<char> (1 << (j + 1));
+
+      ciphertext[k] = a;
+    }
+
   return true;
 }
 

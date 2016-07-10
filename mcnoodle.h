@@ -1,6 +1,7 @@
 #ifndef _mcnoodle_h_
 #define _mcnoodle_h_
 
+#include <algorithm>
 #include <boost/numeric/ublas/matrix.hpp>
 
 typedef int mcnoodle_matrix_element_type_t;
@@ -17,6 +18,11 @@ class mcnoodle
   ~mcnoodle();
   bool decrypt(const char *ciphertext, const size_t ciphertext_size,
 	       char *plaintext, size_t *plaintext_size);
+
+  /*
+  ** The contents of ciphertext must be deallocated via delete [].
+  */
+
   bool encrypt(const char *plaintext, const size_t plaintext_size,
 	       char *ciphertext, size_t *ciphertext_size);
 
@@ -45,6 +51,22 @@ class mcnoodle
   size_t m_k;
   size_t m_n;
   size_t m_t;
+
+  size_t minimumK(const size_t k) const
+  {
+    return std::max(static_cast<size_t> (1024), k);
+  }
+
+  size_t minimumN(const size_t n) const
+  {
+    return std::max(static_cast<size_t> (644), n);
+  }
+
+  size_t minimumT(const size_t t) const
+  {
+    return std::max(static_cast<size_t> (38), t);
+  }
+
   void serialize
     (char *buffer,
      const size_t buffer_size,
