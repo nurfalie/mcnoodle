@@ -108,8 +108,7 @@ bool mcnoodle::encrypt(const char *plaintext, const size_t plaintext_size,
   ** Compute c = mGcar + z.
   */
 
-  boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> c
-    (1, m_n);
+  boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> c(1, m_n);
 
   c = boost::numeric::ublas::prod(m, m_Gcar) + z;
 
