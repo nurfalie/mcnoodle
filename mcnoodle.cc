@@ -24,9 +24,9 @@ mcnoodle::mcnoodle(const size_t k,
   m_t = minimumT(t);
   m_Gcar.resize(m_k, m_n);
   m_P.resize(m_n, m_n);
-  m_Pinv.resize(m_n, m_n);
+  m_Pinv.resize(m_P.size1(), m_P.size2());
   m_S.resize(m_k, m_k);
-  m_Sinv.resize(m_k, m_k);
+  m_Sinv.resize(m_S.size1(), m_S.size2());
 }
 
 mcnoodle::mcnoodle
@@ -208,13 +208,38 @@ void mcnoodle::prepareS(void)
   boost::random::uniform_int_distribution<uint64_t> distribution;
   boost::random_device random_device;
 
-  S.resize(m_k, m_k);
+  S.resize(m_S.size1(), m_S.size2());
+
+ restart_label:
 
   for(size_t i = 0; i < S.size1(); i++)
     for(size_t j = 0; j < S.size2(); j++)
       S(i, j) = static_cast<float> (distribution(random_device) % 2);
 
   m_S = S;
+
+  /*
+  ** Now, let's compute S's inverse.
+  */
+
+  boost::numeric::ublas::permutation_matrix<size_t> pm(S.size1());
+
+  if(boost::numeric::ublas::lu_factorize(S, pm) != 0)
+    {
+      std::cerr << "mcnoodle::prepareS(): lu_factorize() returned zero. "
+		<< "Restarting." << std::endl;
+      goto restart_label;
+    }
+  else
+    std::cout << "mcnoodle::prepareS(): lu_factorize() completed."
+	      << std::endl;
+
+  boost::numeric::ublas::matrix<float> Sinv;
+
+  Sinv.resize(S.size1(), S.size2());
+  Sinv.assign(boost::numeric::ublas::identity_matrix<float> (Sinv.size1()));
+  lu_substitute(S, pm, Sinv);
+  m_Sinv = Sinv;
 }
 
 void mcnoodle::serialize

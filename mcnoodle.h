@@ -60,12 +60,12 @@ class mcnoodle
 
   size_t minimumK(const size_t k) const
   {
-    return std::max(static_cast<size_t> (1024), k);
+    return std::max(static_cast<size_t> (644), k);
   }
 
   size_t minimumN(const size_t n) const
   {
-    return std::max(static_cast<size_t> (644), n);
+    return std::max(static_cast<size_t> (1024), n);
   }
 
   size_t minimumT(const size_t t) const
