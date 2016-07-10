@@ -38,9 +38,15 @@ class mcnoodle
 
   void prepareP(void);
   void prepareS(void);
-  void serializeGcar(char *buffer, const size_t buffer_size);
-  void serializePinv(char *buffer, const size_t buffer_size);
-  void serializeSinv(char *buffer, const size_t buffer_size);
+
+  /*
+  ** The contents of the serialize() methods must be deallocated via
+  ** delete[].
+  */
+
+  void serializeGcar(char *buffer, size_t *buffer_size);
+  void serializePinv(char *buffer, size_t *buffer_size);
+  void serializeSinv(char *buffer, size_t *buffer_size);
 
  private:
   boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> m_Gcar;
@@ -69,7 +75,7 @@ class mcnoodle
 
   void serialize
     (char *buffer,
-     const size_t buffer_size,
+     size_t *buffer_size,
      const boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> &m);
 };
 

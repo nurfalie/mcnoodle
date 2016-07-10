@@ -121,11 +121,15 @@ bool mcnoodle::encrypt(const char *plaintext, const size_t plaintext_size,
 				       ** m_n is not necessarily a multiple
 				       ** of CHAR_BIT.
 				       */
+
+  if(*ciphertext_size == 0) // Very unlikely.
+    return false;
+
   ciphertext = new char[*ciphertext_size];
-  memset(ciphertext, 0, ciphertext_size); /*
-					  ** ciphertext_size may be larger
-					  ** than c.size2().
-					  */
+  memset(ciphertext, 0, *ciphertext_size); /*
+					   ** ciphertext_size may be larger
+					   ** than c.size2().
+					   */
 
   for(size_t i = 0, k = 0; i < c.size2(); k++)
     {
@@ -215,30 +219,38 @@ void mcnoodle::prepareS(void)
 
 void mcnoodle::serialize
 (char *buffer,
- const size_t buffer_size,
+ size_t *buffer_size,
  const boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> &m)
 {
-  if(!buffer || buffer_size <= 0)
+  if(buffer || !buffer_size)
     return;
 
-  boost::iostreams::array_sink sink(buffer, buffer_size);
+  *buffer_size = 16 * m.size1() * m.size2();
+
+  if(*buffer_size == 0) // Possible?
+    return;
+
+  buffer = new char[*buffer_size];
+  memset(buffer, 0, *buffer_size);
+
+  boost::iostreams::array_sink sink(buffer, *buffer_size);
   boost::iostreams::stream<boost::iostreams::array_sink> source(sink);
   boost::archive::binary_oarchive archive(source);
 
   archive << m;
 }
 
-void mcnoodle::serializeGcar(char *buffer, const size_t buffer_size)
+void mcnoodle::serializeGcar(char *buffer, size_t *buffer_size)
 {
   serialize(buffer, buffer_size, m_P);
 }
 
-void mcnoodle::serializePinv(char *buffer, const size_t buffer_size)
+void mcnoodle::serializePinv(char *buffer, size_t *buffer_size)
 {
   serialize(buffer, buffer_size, m_Pinv);
 }
 
-void mcnoodle::serializeSinv(char *buffer, const size_t buffer_size)
+void mcnoodle::serializeSinv(char *buffer, size_t *buffer_size)
 {
   serialize(buffer, buffer_size, m_Sinv);
 }
