@@ -116,8 +116,16 @@ bool mcnoodle::encrypt(const char *plaintext, const size_t plaintext_size,
   ** Place c into ciphertext. The user is responsible for restoring memory.
   */
 
-  *ciphertext_size = static_cast<size_t> (std::ceil(c.size2() / CHAR_BIT));
+  *ciphertext_size = static_cast<size_t>
+    (std::ceil(c.size2() / CHAR_BIT)); /*
+				       ** m_n is not necessarily a multiple
+				       ** of CHAR_BIT.
+				       */
   ciphertext = new char[*ciphertext_size];
+  memset(ciphertext, 0, ciphertext_size); /*
+					  ** ciphertext_size may be larger
+					  ** than c.size2().
+					  */
 
   for(size_t i = 0, k = 0; i < c.size2(); k++)
     {
@@ -184,7 +192,8 @@ void mcnoodle::prepareP(void)
 void mcnoodle::prepareS(void)
 {
   /*
-  ** Generate a random k x k binary non-singular matrix and its inverse.
+  ** Generate a random k x k binary non-singular matrix and compute
+  ** its inverse.
   */
 
   boost::numeric::ublas::matrix<float> S; /*
