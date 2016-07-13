@@ -4,7 +4,7 @@ CXXFLAGS = -O3 -Wall -Wconversion -Werror -Wextra \
 
 LIBRARIES = -lboost_random -lboost_serialization -lboost_system
 
-OBJECT_FILES = mcnoodle.o
+OBJECT_FILES = mcnoodle.o mcnoodle-goppa.o
 
 all:	$(OBJECT_FILES)
 	$(CXX) $(CXXFLAGS) mcnoodle.cc test.cc -o test $(LIBRARIES)
@@ -12,6 +12,8 @@ all:	$(OBJECT_FILES)
 clean:
 	rm -f *.o
 	rm -f test
+
+distclean: clean
 
 purge:
 	rm -f *~*
