@@ -16,6 +16,11 @@ class mcnoodle
      const size_t n,
      const size_t t);
   ~mcnoodle();
+
+  /*
+  ** The contents of plaintext must be deallocated via delete [].
+  */
+
   bool decrypt(const char *ciphertext, const size_t ciphertext_size,
 	       char *&plaintext, size_t *plaintext_size);
   bool deserialize
@@ -30,7 +35,7 @@ class mcnoodle
 	       char *&ciphertext, size_t *ciphertext_size);
 
   /*
-  ** The contents of serialize() must be deallocated via delete[].
+  ** The contents of buffer must be deallocated via delete [].
   */
 
   bool serialize

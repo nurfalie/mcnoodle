@@ -33,12 +33,8 @@ int main(void)
   else
     std::cout << "P does not equal matrix!" << std::endl;
 
-  if(c)
-    delete []c;
-
-  if(d)
-    delete []d;
-
+  delete []c;
+  delete []d;
   c = 0;
   d = 0;
   m.prepareS();
@@ -46,9 +42,6 @@ int main(void)
   char p[] = "Hello. This is a test.";
 
   m.encrypt(p, strlen(p), c, &c_size);
-
-  if(c)
-    delete []c;
-
+  delete []c;
   return EXIT_SUCCESS;
 }
