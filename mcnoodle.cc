@@ -4,6 +4,7 @@ extern "C"
 }
 
 #include <bitset>
+#include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/iostreams/device/array.hpp>
 #include <boost/iostreams/stream.hpp>
@@ -46,19 +47,34 @@ mcnoodle::~mcnoodle()
 }
 
 bool mcnoodle::decrypt(const char *ciphertext, const size_t ciphertext_size,
-		       char *plaintext, size_t *plaintext_size)
+		       char *&plaintext, size_t *plaintext_size)
 {
   bool ok = false;
 
-  if(!ciphertext || ciphertext_size <= 0 || !plaintext || !plaintext_size)
+  if(!ciphertext || ciphertext_size <= 0 || plaintext || !plaintext_size)
     goto done_label;
 
  done_label:
   return ok;
 }
 
+bool mcnoodle::deserialize
+(const char *buffer, const size_t buffer_size,
+ boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> &m)
+{
+  if(!buffer || buffer_size <= 0)
+    return false;
+
+  boost::iostreams::array_source source(buffer, buffer_size);
+  boost::iostreams::stream<boost::iostreams::array_source> stream(source);
+  boost::archive::binary_iarchive archive(stream);
+
+  archive >> m;
+  return true;
+}
+
 bool mcnoodle::encrypt(const char *plaintext, const size_t plaintext_size,
-		       char *ciphertext, size_t *ciphertext_size)
+		       char *&ciphertext, size_t *ciphertext_size)
 {
   if(ciphertext || !ciphertext_size || !plaintext || plaintext_size <= 0)
     return false;
@@ -145,13 +161,39 @@ bool mcnoodle::encrypt(const char *plaintext, const size_t plaintext_size,
   return true;
 }
 
+bool mcnoodle::serialize
+(char *&buffer,
+ size_t *buffer_size,
+ const boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> &m)
+{
+  if(buffer || !buffer_size)
+    return false;
+
+  *buffer_size = sizeof(mcnoodle_matrix_element_type_t) *
+    sizeof(mcnoodle_matrix_element_type_t) * m.size1() * m.size2();
+
+  if(*buffer_size == 0) // Possible?
+    return false;
+
+  buffer = new char[*buffer_size];
+  memset(buffer, 0, *buffer_size);
+
+  boost::iostreams::array_sink sink(buffer, *buffer_size);
+  boost::iostreams::stream<boost::iostreams::array_sink> stream(sink);
+  boost::archive::binary_oarchive archive(stream);
+
+  archive << m;
+  return true;
+}
+
 void mcnoodle::prepareP(void)
 {
   /*
   ** Generate an n x n random permutation matrix and discover its inverse.
   */
 
-  boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> P(m_n, m_n, 0);
+  boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> P_
+    (m_n, m_n, 0);
   boost::random::uniform_int_distribution<uint64_t> distribution;
   boost::random_device random_device;
   std::map<size_t, char> indexes;
@@ -165,14 +207,14 @@ void mcnoodle::prepareP(void)
   ** ...
   */
 
-  for(size_t i = 0; i < P.size1(); i++)
+  for(size_t i = 0; i < P_.size1(); i++)
     do
       {
-	size_t j = distribution(random_device) % P.size2();
+	size_t j = distribution(random_device) % P_.size2();
 
 	if(indexes.find(j) == indexes.end())
 	  {
-	    P(i, j) = 1;
+	    P_(i, j) = 1;
 	    indexes[j] = 0;
 	    break;
 	  }
@@ -189,7 +231,7 @@ void mcnoodle::prepareP(void)
   ** That is, PP^T = I or the inverse of P is equal to P's transpose.
   */
 
-  m_P = P;
+  m_P = P_;
   m_Pinv = boost::numeric::ublas::trans(m_P);
 }
 
@@ -240,42 +282,4 @@ void mcnoodle::prepareS(void)
   Sinv.assign(boost::numeric::ublas::identity_matrix<float> (Sinv.size1()));
   lu_substitute(S, pm, Sinv);
   m_Sinv = Sinv;
-}
-
-void mcnoodle::serialize
-(char *buffer,
- size_t *buffer_size,
- const boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> &m)
-{
-  if(buffer || !buffer_size)
-    return;
-
-  *buffer_size = 16 * m.size1() * m.size2();
-
-  if(*buffer_size == 0) // Possible?
-    return;
-
-  buffer = new char[*buffer_size];
-  memset(buffer, 0, *buffer_size);
-
-  boost::iostreams::array_sink sink(buffer, *buffer_size);
-  boost::iostreams::stream<boost::iostreams::array_sink> source(sink);
-  boost::archive::binary_oarchive archive(source);
-
-  archive << m;
-}
-
-void mcnoodle::serializeGcar(char *buffer, size_t *buffer_size)
-{
-  serialize(buffer, buffer_size, m_P);
-}
-
-void mcnoodle::serializePinv(char *buffer, size_t *buffer_size)
-{
-  serialize(buffer, buffer_size, m_Pinv);
-}
-
-void mcnoodle::serializeSinv(char *buffer, size_t *buffer_size)
-{
-  serialize(buffer, buffer_size, m_Sinv);
 }

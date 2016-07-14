@@ -17,14 +17,31 @@ class mcnoodle
      const size_t t);
   ~mcnoodle();
   bool decrypt(const char *ciphertext, const size_t ciphertext_size,
-	       char *plaintext, size_t *plaintext_size);
+	       char *&plaintext, size_t *plaintext_size);
+  bool deserialize
+    (const char *buffer, const size_t buffer_size,
+     boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> &m);
 
   /*
   ** The contents of ciphertext must be deallocated via delete [].
   */
 
   bool encrypt(const char *plaintext, const size_t plaintext_size,
-	       char *ciphertext, size_t *ciphertext_size);
+	       char *&ciphertext, size_t *ciphertext_size);
+
+  /*
+  ** The contents of serialize() must be deallocated via delete[].
+  */
+
+  bool serialize
+    (char *&buffer,
+     size_t *buffer_size,
+     const boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> &m);
+
+  boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> P(void) const
+  {
+    return m_P;
+  }
 
   size_t pSize(void) const
   {
@@ -38,15 +55,6 @@ class mcnoodle
 
   void prepareP(void);
   void prepareS(void);
-
-  /*
-  ** The contents of the serialize() methods must be deallocated via
-  ** delete[].
-  */
-
-  void serializeGcar(char *buffer, size_t *buffer_size);
-  void serializePinv(char *buffer, size_t *buffer_size);
-  void serializeSinv(char *buffer, size_t *buffer_size);
 
  private:
   boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> m_Gcar;
@@ -72,11 +80,6 @@ class mcnoodle
   {
     return std::max(static_cast<size_t> (38), t);
   }
-
-  void serialize
-    (char *buffer,
-     size_t *buffer_size,
-     const boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> &m);
 };
 
 #endif
