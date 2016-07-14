@@ -58,6 +58,9 @@ class mcnoodle
     return m_S.size1(); // Square matrix.
   }
 
+  static bool equal
+    (const boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> &m1,
+     const boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> &m2);
   void prepareP(void);
   void prepareS(void);
 

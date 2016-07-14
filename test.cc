@@ -28,7 +28,7 @@ int main(void)
 
   m.serialize(d, &d_size, matrix);
 
-  if(c && d && c_size == d_size && memcmp(c, d, c_size) == 0)
+  if(mcnoodle::equal(m.P(), matrix))
     std::cout << "P equals matrix!" << std::endl;
   else
     std::cout << "P does not equal matrix!" << std::endl;

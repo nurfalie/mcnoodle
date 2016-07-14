@@ -161,6 +161,21 @@ bool mcnoodle::encrypt(const char *plaintext, const size_t plaintext_size,
   return true;
 }
 
+bool mcnoodle::equal
+(const boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> &m1,
+ const boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> &m2)
+{
+  if(m1.size1() != m2.size1() || m1.size2() != m2.size2())
+    return false;
+
+  for(size_t i = 0; i < m1.size1(); i++)
+    for(size_t j = 0; j < m1.size2(); j++)
+      if(m1(i, j) != m2(i, j))
+	return false;
+
+  return true;
+}
+
 bool mcnoodle::serialize
 (char *&buffer,
  size_t *buffer_size,
