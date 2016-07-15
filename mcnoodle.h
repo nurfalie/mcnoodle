@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <boost/numeric/ublas/matrix.hpp>
 
-typedef int mcnoodle_matrix_element_type_t;
+typedef char mcnoodle_matrix_element_type_t;
 
 class mcnoodle
 {

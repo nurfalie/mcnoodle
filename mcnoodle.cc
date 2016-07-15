@@ -196,8 +196,12 @@ bool mcnoodle::serialize
   if(buffer || !buffer_size)
     return false;
 
-  *buffer_size = sizeof(mcnoodle_matrix_element_type_t) *
-    sizeof(mcnoodle_matrix_element_type_t) * m.size1() * m.size2();
+  /*
+  ** We'd like support char types.
+  */
+
+  *buffer_size = (sizeof(mcnoodle_matrix_element_type_t) + 1) *
+    (sizeof(mcnoodle_matrix_element_type_t) + 1) * m.size1() * m.size2();
 
   if(*buffer_size == 0) // Possible?
     return false;
