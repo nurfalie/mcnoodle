@@ -69,11 +69,19 @@ bool mcnoodle::deserialize
   if(!buffer || buffer_size <= 0)
     return false;
 
-  boost::iostreams::array_source source(buffer, buffer_size);
-  boost::iostreams::stream<boost::iostreams::array_source> stream(source);
-  boost::archive::binary_iarchive archive(stream);
+  try
+    {
+      boost::iostreams::array_source source(buffer, buffer_size);
+      boost::iostreams::stream<boost::iostreams::array_source> stream(source);
+      boost::archive::binary_iarchive archive(stream);
 
-  archive >> m;
+      archive >> m;
+    }
+  catch(...)
+    {
+      return false;
+    }
+
   return true;
 }
 
@@ -194,14 +202,25 @@ bool mcnoodle::serialize
   if(*buffer_size == 0) // Possible?
     return false;
 
-  buffer = new char[*buffer_size];
-  memset(buffer, 0, *buffer_size);
+  try
+    {
+      buffer = new char[*buffer_size];
+      memset(buffer, 0, *buffer_size);
 
-  boost::iostreams::array_sink sink(buffer, *buffer_size);
-  boost::iostreams::stream<boost::iostreams::array_sink> stream(sink);
-  boost::archive::binary_oarchive archive(stream);
+      boost::iostreams::array_sink sink(buffer, *buffer_size);
+      boost::iostreams::stream<boost::iostreams::array_sink> stream(sink);
+      boost::archive::binary_oarchive archive(stream);
 
-  archive << m;
+      archive << m;
+    }
+  catch(...)
+    {
+      delete []buffer;
+      buffer = 0;
+      *buffer_size = 0;
+      return false;
+    }
+
   return true;
 }
 
