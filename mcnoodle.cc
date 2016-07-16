@@ -20,6 +20,10 @@ mcnoodle::mcnoodle(const size_t k,
 		   const size_t n,
 		   const size_t t)
 {
+  /*
+  ** For generating the private and public keys.
+  */
+
   m_k = minimumK(k);
   m_n = minimumN(n);
   m_t = minimumT(t);
@@ -36,14 +40,14 @@ mcnoodle::mcnoodle
  const size_t n,
  const size_t t)
 {
+  /*
+  ** For public-key encryption.
+  */
+
   m_k = minimumK(k);
   m_n = minimumN(n);
   m_t = minimumT(t);
   m_Gcar = Gcar;
-  m_P.resize(m_n, m_n);
-  m_Pinv.resize(m_P.size1(), m_P.size2());
-  m_S.resize(m_k, m_k);
-  m_Sinv.resize(m_S.size1(), m_S.size2());
 }
 
 mcnoodle::~mcnoodle()
