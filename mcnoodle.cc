@@ -154,7 +154,7 @@ bool mcnoodle::encrypt(const char *plaintext, const size_t plaintext_size,
 	}
 
       /*
-      ** Compute c = mGcar + z.
+      ** Compute c = mGcar + z, a 1 by m_n vector.
       */
 
       boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> c(1, m_n);
@@ -183,6 +183,10 @@ bool mcnoodle::encrypt(const char *plaintext, const size_t plaintext_size,
       for(size_t i = 0, k = 0; i < c.size2(); k++)
 	{
 	  char a = 0;
+
+	  /*
+	  ** Store CHAR_BIT vector entries into a char variable.
+	  */
 
 	  for(size_t j = 0; i < c.size2() && j < CHAR_BIT; i++, j++)
 	    if((c(0, i) >> (j + 1)) & 1)
