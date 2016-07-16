@@ -76,17 +76,29 @@ class mcnoodle
 
   size_t minimumK(const size_t k) const
   {
+#ifdef MCNOODLE_ASSUME_SAFE_PARAMETERS
+    return k;
+#else
     return std::max(static_cast<size_t> (644), k);
+#endif
   }
 
   size_t minimumN(const size_t n) const
   {
+#ifdef MCNOODLE_ASSUME_SAFE_PARAMETERS
+    return n;
+#else
     return std::max(static_cast<size_t> (1024), n);
+#endif
   }
 
   size_t minimumT(const size_t t) const
   {
+#ifdef MCNOODLE_ASSUME_SAFE_PARAMETERS
+    return t;
+#else
     return std::max(static_cast<size_t> (38), t);
+#endif
   }
 };
 

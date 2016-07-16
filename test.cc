@@ -10,7 +10,8 @@ extern "C"
 int main(void)
 {
   // mcnoodle m(1269, 1632, 34);
-  mcnoodle m(644, 1024, 38);
+  // mcnoodle m(644, 1024, 38);
+  mcnoodle m(100, 100, 38);
 
   m.prepareP();
 
