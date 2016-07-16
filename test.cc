@@ -40,7 +40,7 @@ int main(void)
   d = 0;
   m.prepareS();
 
-  char p[] = "Hello. This is a test.";
+  char p[] = "A test.";
 
   m.encrypt(p, strlen(p), c, &c_size);
   delete []c;

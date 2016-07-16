@@ -71,17 +71,24 @@ mcnoodle::~mcnoodle()
 bool mcnoodle::decrypt(const char *ciphertext, const size_t ciphertext_size,
 		       char *&plaintext, size_t *plaintext_size)
 {
-  bool ok = false;
-
   if(!ciphertext || ciphertext_size <= 0 || plaintext || !plaintext_size)
-    goto done_label;
+    return false;
 
   /*
   ** Store the ciphertext into an 1-by-m_n vector.
   */
 
- done_label:
-  return ok;
+  boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> c(1, m_n);
+  char *buffer = new char[ciphertext_size];
+
+  if(!deserialize(buffer, ciphertext_size, c))
+    {
+      delete []buffer;
+      return false;
+    }
+
+  delete []buffer;
+  return true;
 }
 
 bool mcnoodle::deserialize
@@ -169,35 +176,7 @@ bool mcnoodle::encrypt(const char *plaintext, const size_t plaintext_size,
       ** Place c into ciphertext. The user is responsible for restoring memory.
       */
 
-      *ciphertext_size = static_cast<size_t>
-	(std::ceil(c.size2() / CHAR_BIT)); /*
-					   ** m_n is not necessarily a multiple
-					   ** of CHAR_BIT.
-					   */
-
-      if(*ciphertext_size == 0) // Very unlikely.
-	return false;
-
-      ciphertext = new char[*ciphertext_size];
-      memset(ciphertext, 0, *ciphertext_size); /*
-					       ** ciphertext_size may be larger
-					       ** than c.size2().
-					       */
-
-      for(size_t i = 0, k = 0; i < c.size2(); k++)
-	{
-	  char a = 0;
-
-	  /*
-	  ** Store CHAR_BIT vector entries into a char variable.
-	  */
-
-	  for(size_t j = 0; i < c.size2() && j < CHAR_BIT; i++, j++)
-	    if((c(0, i) >> (j + 1)) & 1)
-	      a |= static_cast<char> (1 << (j + 1));
-
-	  ciphertext[k] = a;
-	}
+      return serialize(ciphertext, ciphertext_size, c);
     }
   catch(...)
     {
@@ -206,8 +185,6 @@ bool mcnoodle::encrypt(const char *plaintext, const size_t plaintext_size,
       *ciphertext_size = 0;
       return false;
     }
-
-  return true;
 }
 
 bool mcnoodle::equal
