@@ -27,11 +27,18 @@ mcnoodle::mcnoodle(const size_t k,
   m_k = minimumK(k);
   m_n = minimumN(n);
   m_t = minimumT(t);
-  m_Gcar.resize(m_k, m_n);
-  m_P.resize(m_n, m_n);
-  m_Pinv.resize(m_P.size1(), m_P.size2());
-  m_S.resize(m_k, m_k);
-  m_Sinv.resize(m_S.size1(), m_S.size2());
+
+  try
+    {
+      m_Gcar.resize(m_k, m_n);
+      m_P.resize(m_n, m_n);
+      m_Pinv.resize(m_P.size1(), m_P.size2());
+      m_S.resize(m_k, m_k);
+      m_Sinv.resize(m_S.size1(), m_S.size2());
+    }
+  catch(...)
+    {
+    }
 }
 
 mcnoodle::mcnoodle
@@ -47,7 +54,14 @@ mcnoodle::mcnoodle
   m_k = minimumK(k);
   m_n = minimumN(n);
   m_t = minimumT(t);
-  m_Gcar = Gcar;
+
+  try
+    {
+      m_Gcar = Gcar;
+    }
+  catch(...)
+    {
+    }
 }
 
 mcnoodle::~mcnoodle()
@@ -98,83 +112,95 @@ bool mcnoodle::encrypt(const char *plaintext, const size_t plaintext_size,
   if(CHAR_BIT * plaintext_size > m_k)
     return false;
 
-  /*
-  ** Represent the message as a binary vector of length k.
-  */
-
-  boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> m
-    (1, m_k, 0);
-
-  for(size_t i = 0, k = 0; i < plaintext_size; i++)
+  try
     {
-      std::bitset<CHAR_BIT> b(plaintext[i]);
+      /*
+      ** Represent the message as a binary vector of length k.
+      */
 
-      for(size_t j = 0; j < b.size(); j++, k++)
-	m(0, k) = b[j];
-    }
+      boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> m
+	(1, m_k, 0);
 
-  /*
-  ** Generate a random binary vector of length n having at most t 1s.
-  */
-
-  boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> z(1, m_n, 0);
-  boost::random::uniform_int_distribution<uint64_t> distribution;
-  boost::random_device random_device;
-  size_t ts = 0;
-
-  for(size_t i = 0; i < z.size2(); i++)
-    {
-      mcnoodle_matrix_element_type_t a = distribution(random_device) % 2;
-
-      if(a == 1)
+      for(size_t i = 0, k = 0; i < plaintext_size; i++)
 	{
-	  ts += 1;
-	  z(0, i) = 1;
+	  std::bitset<CHAR_BIT> b(plaintext[i]);
 
-	  if(m_t == ts)
-	    break;
+	  for(size_t j = 0; j < b.size(); j++, k++)
+	    m(0, k) = b[j];
 	}
-    }
 
-  /*
-  ** Compute c = mGcar + z.
-  */
+      /*
+      ** Generate a random binary vector of length n having at most t 1s.
+      */
 
-  boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> c(1, m_n);
+      boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> z
+	(1, m_n, 0);
+      boost::random::uniform_int_distribution<uint64_t> distribution;
+      boost::random_device random_device;
+      size_t ts = 0;
 
-  c = boost::numeric::ublas::prod(m, m_Gcar) + z;
+      for(size_t i = 0; i < z.size2(); i++)
+	{
+	  mcnoodle_matrix_element_type_t a = distribution(random_device) % 2;
 
-  /*
-  ** Place c into ciphertext. The user is responsible for restoring memory.
-  */
+	  if(a == 1)
+	    {
+	      ts += 1;
+	      z(0, i) = 1;
 
-  *ciphertext_size = static_cast<size_t>
-    (std::ceil(c.size2() / CHAR_BIT)); /*
-				       ** m_n is not necessarily a multiple
-				       ** of CHAR_BIT.
-				       */
+	      if(m_t == ts)
+		break;
+	    }
+	}
 
-  if(*ciphertext_size == 0) // Very unlikely.
-    return false;
+      /*
+      ** Compute c = mGcar + z.
+      */
 
-  ciphertext = new char[*ciphertext_size];
-  memset(ciphertext, 0, *ciphertext_size); /*
-					   ** ciphertext_size may be larger
-					   ** than c.size2().
+      boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> c(1, m_n);
+
+      c = boost::numeric::ublas::prod(m, m_Gcar) + z;
+
+      /*
+      ** Place c into ciphertext. The user is responsible for restoring memory.
+      */
+
+      *ciphertext_size = static_cast<size_t>
+	(std::ceil(c.size2() / CHAR_BIT)); /*
+					   ** m_n is not necessarily a multiple
+					   ** of CHAR_BIT.
 					   */
 
-  for(size_t i = 0, k = 0; i < c.size2(); k++)
+      if(*ciphertext_size == 0) // Very unlikely.
+	return false;
+
+      ciphertext = new char[*ciphertext_size];
+      memset(ciphertext, 0, *ciphertext_size); /*
+					       ** ciphertext_size may be larger
+					       ** than c.size2().
+					       */
+
+      for(size_t i = 0, k = 0; i < c.size2(); k++)
+	{
+	  char a = 0;
+
+	  for(size_t j = 0; i < c.size2() && j < CHAR_BIT; i++, j++)
+	    if((c(0, i) >> (j + 1)) & 1)
+	      a |= static_cast<char> (1 << (j + 1));
+
+	  ciphertext[k] = a;
+	}
+
+      return true;
+    }
+  catch(...)
     {
-      char a = 0;
-
-      for(size_t j = 0; i < c.size2() && j < CHAR_BIT; i++, j++)
-	if((c(0, i) >> (j + 1)) & 1)
-	  a |= static_cast<char> (1 << (j + 1));
-
-      ciphertext[k] = a;
+      delete []ciphertext;
+      ciphertext = 0;
+      *ciphertext_size = 0;
     }
 
-  return true;
+  return false;
 }
 
 bool mcnoodle::equal
