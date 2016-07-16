@@ -76,6 +76,10 @@ bool mcnoodle::decrypt(const char *ciphertext, const size_t ciphertext_size,
   if(!ciphertext || ciphertext_size <= 0 || plaintext || !plaintext_size)
     goto done_label;
 
+  /*
+  ** Store the ciphertext into an 1-by-m_n vector.
+  */
+
  done_label:
   return ok;
 }
@@ -154,7 +158,7 @@ bool mcnoodle::encrypt(const char *plaintext, const size_t plaintext_size,
 	}
 
       /*
-      ** Compute c = mGcar + z, a 1 by m_n vector.
+      ** Compute c = mGcar + z, an 1-by-m_n vector.
       */
 
       boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> c(1, m_n);
