@@ -30,6 +30,7 @@ mcnoodle::mcnoodle(const size_t k,
 
   try
     {
+      m_G.resize(m_k, m_n);
       m_Gcar.resize(m_k, m_n);
       m_P.resize(m_n, m_n);
       m_Pinv.resize(m_P.size1(), m_P.size2());
@@ -236,6 +237,26 @@ bool mcnoodle::serialize
       delete []buffer;
       buffer = 0;
       *buffer_size = 0;
+      return false;
+    }
+
+  return true;
+}
+
+bool mcnoodle::prepareG(void)
+{
+  return true;
+}
+
+bool mcnoodle::prepareGcar(void)
+{
+  try
+    {
+      m_Gcar = boost::numeric::ublas::prod(m_S, m_G);
+      m_Gcar = boost::numeric::ublas::prod(m_Gcar, m_P);
+    }
+  catch(...)
+    {
       return false;
     }
 
