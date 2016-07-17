@@ -69,6 +69,9 @@ class mcnoodle
  private:
   boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> m_G;
   boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> m_Gcar;
+#if MCNOODLE_ARTIFICIAL_GENERATOR
+  boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> m_Ginv;
+#endif
   boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> m_P;
   boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> m_Pinv;
   boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> m_S;

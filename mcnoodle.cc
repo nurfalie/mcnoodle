@@ -75,21 +75,50 @@ bool mcnoodle::decrypt(const char *ciphertext, const size_t ciphertext_size,
   if(!ciphertext || ciphertext_size <= 0 || plaintext || !plaintext_size)
     return false;
 
-  /*
-  ** Store the ciphertext into an 1-by-m_n vector.
-  */
-
-  boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> c(1, m_n);
+  bool rc = true;
   char *buffer = new char[ciphertext_size];
 
-  if(!deserialize(buffer, ciphertext_size, c))
+  try
     {
-      delete []buffer;
-      return false;
+      /*
+      ** Store the ciphertext into an 1-by-m_n vector.
+      */
+
+      boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> c(1, m_n);
+
+      if(!deserialize(buffer, ciphertext_size, c))
+	{
+	  rc = false;
+	  goto done_label;
+	}
+
+      boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> ccar
+	(1, m_n);
+      boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> m
+	(1, m_k);
+      boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> mcar
+	(1, m_k);
+
+      ccar = boost::numeric::ublas::prod(c, m_Pinv);
+
+#ifdef MCNOODLE_ARTIFICIAL_GENERATOR
+      mcar = boost::numeric::ublas::prod(ccar, m_Ginv);
+      m = boost::numeric::ublas::prod(mcar, m_Sinv);
+#else
+#endif
+
+      /*
+      ** Now convert the matrix m into a character array.
+      */
+    }
+  catch(...)
+    {
+      rc = false;
     }
 
+ done_label:
   delete []buffer;
-  return true;
+  return rc;
 }
 
 bool mcnoodle::deserialize
@@ -232,11 +261,11 @@ bool mcnoodle::serialize
   if(*buffer_size == 0) // Possible?
     return false;
 
+  buffer = new char[*buffer_size];
+  memset(buffer, 0, *buffer_size);
+
   try
     {
-      buffer = new char[*buffer_size];
-      memset(buffer, 0, *buffer_size);
-
       boost::iostreams::array_sink sink(buffer, *buffer_size);
       boost::iostreams::stream<boost::iostreams::array_sink> stream(sink);
       boost::archive::binary_oarchive archive(stream);
@@ -259,9 +288,9 @@ bool mcnoodle::prepareG(void)
   try
     {
 #ifdef MCNOODLE_ARTIFICIAL_GENERATOR
-      for(size_t i = 0; i < m_G.size1(); i++)
-	for(size_t j = 0; j < m_G.size2(); j++)
-	  m_G(i, j) = 1;
+      m_G = boost::numeric::ublas::identity_matrix
+	<mcnoodle_matrix_element_type_t> (m_G.size1());
+      m_Ginv = m_G;
 #endif
     }
   catch(...)
@@ -382,9 +411,6 @@ bool mcnoodle::prepareS(void)
 		    << "Restarting." << std::endl;
 	  goto restart_label;
 	}
-      else
-	std::cout << "mcnoodle::prepareS(): lu_factorize() completed."
-		  << std::endl;
 
       boost::numeric::ublas::matrix<float> Sinv;
 
