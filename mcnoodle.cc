@@ -76,7 +76,6 @@ bool mcnoodle::decrypt(const char *ciphertext, const size_t ciphertext_size,
     return false;
 
   bool rc = true;
-  char *buffer = new char[ciphertext_size];
 
   try
     {
@@ -86,7 +85,7 @@ bool mcnoodle::decrypt(const char *ciphertext, const size_t ciphertext_size,
 
       boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> c(1, m_n);
 
-      if(!deserialize(buffer, ciphertext_size, c))
+      if(!deserialize(ciphertext, ciphertext_size, c))
 	{
 	  rc = false;
 	  goto done_label;
@@ -110,6 +109,31 @@ bool mcnoodle::decrypt(const char *ciphertext, const size_t ciphertext_size,
       /*
       ** Now convert the matrix m into a character array.
       */
+
+      *plaintext_size = static_cast<size_t>
+	(std::ceil(m.size2() / CHAR_BIT)); /*
+					   ** m_n is not necessarily a multiple
+					   ** of CHAR_BIT.
+					   */
+
+      if(*plaintext_size <= 0) // Unlikely.
+	{
+	  rc = false;
+	  goto done_label;
+	}
+
+      plaintext = new char[*plaintext_size];
+      memset(plaintext, 0, *plaintext_size);
+
+      for(size_t i = 0, k = 0; i < m.size2(); k++)
+	{
+	  std::bitset<CHAR_BIT> b;
+
+	  for(size_t j = 0; j < CHAR_BIT && i < m.size2(); i++, j++)
+	    b[j] = m(0, i);
+
+	  plaintext[k] = static_cast<char> (b.to_ulong());
+	}
     }
   catch(...)
     {
@@ -117,7 +141,13 @@ bool mcnoodle::decrypt(const char *ciphertext, const size_t ciphertext_size,
     }
 
  done_label:
-  delete []buffer;
+
+  if(!rc)
+    {
+      delete []plaintext;
+      *plaintext_size = 0;
+    }
+
   return rc;
 }
 
@@ -239,46 +269,6 @@ bool mcnoodle::equal
     for(size_t j = 0; j < m1.size2(); j++)
       if(m1(i, j) != m2(i, j))
 	return false;
-
-  return true;
-}
-
-bool mcnoodle::serialize
-(char *&buffer,
- size_t *buffer_size,
- const boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> &m)
-{
-  if(buffer || !buffer_size)
-    return false;
-
-  /*
-  ** We'd like support char types (sizeof(...) + 1).
-  */
-
-  *buffer_size = (sizeof(mcnoodle_matrix_element_type_t) + 1) *
-    (sizeof(mcnoodle_matrix_element_type_t) + 1) * m.size1() * m.size2();
-
-  if(*buffer_size == 0) // Possible?
-    return false;
-
-  buffer = new char[*buffer_size];
-  memset(buffer, 0, *buffer_size);
-
-  try
-    {
-      boost::iostreams::array_sink sink(buffer, *buffer_size);
-      boost::iostreams::stream<boost::iostreams::array_sink> stream(sink);
-      boost::archive::binary_oarchive archive(stream);
-
-      archive << m;
-    }
-  catch(...)
-    {
-      delete []buffer;
-      buffer = 0;
-      *buffer_size = 0;
-      return false;
-    }
 
   return true;
 }
@@ -422,6 +412,46 @@ bool mcnoodle::prepareS(void)
     }
   catch(...)
     {
+      return false;
+    }
+
+  return true;
+}
+
+bool mcnoodle::serialize
+(char *&buffer,
+ size_t *buffer_size,
+ const boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> &m)
+{
+  if(buffer || !buffer_size)
+    return false;
+
+  /*
+  ** We'd like support char types (sizeof(...) + 1).
+  */
+
+  *buffer_size = (sizeof(mcnoodle_matrix_element_type_t) + 1) *
+    (sizeof(mcnoodle_matrix_element_type_t) + 1) * m.size1() * m.size2();
+
+  if(*buffer_size == 0) // Possible?
+    return false;
+
+  buffer = new char[*buffer_size];
+  memset(buffer, 0, *buffer_size);
+
+  try
+    {
+      boost::iostreams::array_sink sink(buffer, *buffer_size);
+      boost::iostreams::stream<boost::iostreams::array_sink> stream(sink);
+      boost::archive::binary_oarchive archive(stream);
+
+      archive << m;
+    }
+  catch(...)
+    {
+      delete []buffer;
+      buffer = 0;
+      *buffer_size = 0;
       return false;
     }
 

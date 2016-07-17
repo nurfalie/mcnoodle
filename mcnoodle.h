@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <boost/numeric/ublas/matrix.hpp>
 
-typedef char mcnoodle_matrix_element_type_t;
+typedef int mcnoodle_matrix_element_type_t;
 
 class mcnoodle
 {
@@ -46,6 +46,11 @@ class mcnoodle
   boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> P(void) const
   {
     return m_P;
+  }
+
+  boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> S(void) const
+  {
+    return m_S;
   }
 
   size_t pSize(void) const
