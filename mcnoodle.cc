@@ -141,6 +141,16 @@ bool mcnoodle::encrypt(const char *plaintext, const size_t plaintext_size,
 	    m(0, k) = b[j];
 	}
 
+#ifdef MCNOODLE_ARTIFICIAL_GENERATOR
+      /*
+      ** This will allow us to prove that decryption and encryption
+      ** are correct without a generator G matrix.
+      */
+
+      boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> c(1, m_n);
+
+      c = boost::numeric::ublas::prod(m, m_Gcar);
+#else
       /*
       ** Generate a random binary vector of length n having at most t 1s.
       */
@@ -172,6 +182,7 @@ bool mcnoodle::encrypt(const char *plaintext, const size_t plaintext_size,
       boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> c(1, m_n);
 
       c = boost::numeric::ublas::prod(m, m_Gcar) + z;
+#endif
 
       /*
       ** Place c into ciphertext. The user is responsible for restoring memory.
@@ -245,6 +256,19 @@ bool mcnoodle::serialize
 
 bool mcnoodle::prepareG(void)
 {
+  try
+    {
+#ifdef MCNOODLE_ARTIFICIAL_GENERATOR
+      for(size_t i = 0; i < m_G.size1(); i++)
+	for(size_t j = 0; j < m_G.size2(); j++)
+	  m_G(i, j) = 1;
+#endif
+    }
+  catch(...)
+    {
+      return false;
+    }
+
   return true;
 }
 

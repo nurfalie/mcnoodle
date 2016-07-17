@@ -7,10 +7,12 @@ extern "C"
 
 #include "mcnoodle.h"
 
-int main(void)
+int test2(void)
 {
-  // mcnoodle m(1269, 1632, 34);
-  // mcnoodle m(644, 1024, 38);
+  int rc = 0;
+
+  std::cout << "Testing matrix equality... ";
+
   mcnoodle m(100, 100, 38);
 
   m.prepareP();
@@ -24,25 +26,22 @@ int main(void)
 
   m.deserialize(c, c_size, matrix);
 
-  char *d = 0;
-  size_t d_size = 0;
-
-  m.serialize(d, &d_size, matrix);
-
-  if(mcnoodle::equal(m.P(), matrix))
+  if((rc = mcnoodle::equal(m.P(), matrix)))
     std::cout << "P equals matrix!" << std::endl;
   else
     std::cout << "P does not equal matrix!" << std::endl;
 
   delete []c;
-  delete []d;
-  c = 0;
-  d = 0;
-  m.prepareS();
+  return rc;
+}
 
-  char p[] = "A test.";
+int main(void)
+{
+  // mcnoodle m(1269, 1632, 34);
+  // mcnoodle m(644, 1024, 38);
 
-  m.encrypt(p, strlen(p), c, &c_size);
-  delete []c;
-  return EXIT_SUCCESS;
+  int rc = 0;
+
+  rc |= !test2();
+  return rc;
 }
