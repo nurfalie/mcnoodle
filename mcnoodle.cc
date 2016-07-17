@@ -196,7 +196,7 @@ bool mcnoodle::encrypt(const char *plaintext, const size_t plaintext_size,
 	{
 	  std::bitset<CHAR_BIT> b(plaintext[i]);
 
-	  for(size_t j = 0; j < b.size(); j++, k++)
+	  for(size_t j = 0; j < b.size() && k < m.size2(); j++, k++)
 	    m(0, k) = b[j];
 	}
 
