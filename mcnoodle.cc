@@ -331,7 +331,7 @@ bool mcnoodle::prepareS(void)
       */
 
       boost::numeric::ublas::matrix<float> S; /*
-					      ** BOOST type-checking may
+					      ** Boost type-checking may
 					      ** raise an exception unless
 					      ** we're using real numbers.
 					      */
