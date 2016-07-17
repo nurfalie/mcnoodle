@@ -211,7 +211,7 @@ bool mcnoodle::serialize
     return false;
 
   /*
-  ** We'd like support char types.
+  ** We'd like support char types (sizeof(...) + 1).
   */
 
   *buffer_size = (sizeof(mcnoodle_matrix_element_type_t) + 1) *
