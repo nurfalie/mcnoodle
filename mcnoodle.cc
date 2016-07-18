@@ -4,17 +4,33 @@ extern "C"
 }
 
 #include <bitset>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/iostreams/device/array.hpp>
-#include <boost/iostreams/stream.hpp>
-#include <boost/nondet_random.hpp>
-#include <boost/numeric/ublas/matrix.hpp>
-#include <boost/numeric/ublas/lu.hpp>
-#include <boost/random.hpp>
 #include <map>
 
 #include "mcnoodle.h"
+
+template<class T>
+static bool matrix_inverse
+(const boost::numeric::ublas::matrix<T> &m,
+ boost::numeric::ublas::matrix<T> &inverse)
+{
+  try
+    {
+      boost::numeric::ublas::matrix<T> a(m);
+      boost::numeric::ublas::permutation_matrix<size_t> pm(a.size1());
+
+      if(boost::numeric::ublas::lu_factorize(a, pm) != 0)
+	return false;
+
+      inverse.assign(boost::numeric::ublas::identity_matrix<T> (a.size1()));
+      boost::numeric::ublas::lu_substitute(a, pm, inverse);
+    }
+  catch(...)
+    {
+      return false;
+    }
+
+  return true;
+}
 
 mcnoodle::mcnoodle(const size_t k,
 		   const size_t n,
@@ -373,11 +389,7 @@ bool mcnoodle::prepareS(void)
       ** its inverse.
       */
 
-      boost::numeric::ublas::matrix<float> S; /*
-					      ** Boost type-checking may
-					      ** raise an exception unless
-					      ** we're using real numbers.
-					      */
+      boost::numeric::ublas::matrix<float> S;
       boost::random::uniform_int_distribution<uint64_t> distribution;
       boost::random_device random_device;
 
@@ -393,20 +405,12 @@ bool mcnoodle::prepareS(void)
       ** Now, let's compute S's inverse.
       */
 
-      boost::numeric::ublas::permutation_matrix<size_t> pm(S.size1());
+      boost::numeric::ublas::matrix<float> Sinv
+	(S.size1(), S.size2());
 
-      if(boost::numeric::ublas::lu_factorize(S, pm) != 0)
-	{
-	  std::cerr << "mcnoodle::prepareS(): lu_factorize() returned zero. "
-		    << "Restarting." << std::endl;
-	  goto restart_label;
-	}
+      if(!matrix_inverse(S, Sinv))
+	goto restart_label;
 
-      boost::numeric::ublas::matrix<float> Sinv;
-
-      Sinv.resize(S.size1(), S.size2());
-      Sinv.assign(boost::numeric::ublas::identity_matrix<float> (Sinv.size1()));
-      lu_substitute(S, pm, Sinv);
       m_S = S;
       m_Sinv = Sinv;
     }

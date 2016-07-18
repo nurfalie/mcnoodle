@@ -28,7 +28,9 @@ int test1(void)
   rc &= m.decrypt(c, c_size, p, &p_size);
 
   if(p && memcmp(p, plain, strlen(plain)) == 0)
-    std::cout << "p equals plain!" << std::endl;
+    {
+      std::cout << "p (" << p << ") equals plain!" << std::endl;
+    }
   else
     {
       rc = 0;

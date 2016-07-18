@@ -1,8 +1,18 @@
 #ifndef _mcnoodle_h_
 #define _mcnoodle_h_
 
-#include <algorithm>
+#define BOOST_UBLAS_NDEBUG 1
+#define BOOST_UBLAS_TYPE_CHECK 0
+
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/iostreams/device/array.hpp>
+#include <boost/iostreams/stream.hpp>
+#include <boost/nondet_random.hpp>
+#include <boost/numeric/ublas/lu.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
+#include <boost/numeric/ublas/matrix.hpp>
+#include <boost/random.hpp>
 
 typedef int mcnoodle_matrix_element_type_t;
 
