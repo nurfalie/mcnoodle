@@ -58,7 +58,7 @@ class mcnoodle
     return m_P;
   }
 
-  boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> S(void) const
+  boost::numeric::ublas::matrix<double> S(void) const
   {
     return m_S;
   }
@@ -82,6 +82,7 @@ class mcnoodle
      const boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> &m2);
 
  private:
+  boost::numeric::ublas::matrix<double> m_Sinv;
   boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> m_G;
   boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> m_Gcar;
 #if MCNOODLE_ARTIFICIAL_GENERATOR
@@ -90,7 +91,6 @@ class mcnoodle
   boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> m_P;
   boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> m_Pinv;
   boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> m_S;
-  boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> m_Sinv;
   size_t m_k;
   size_t m_n;
   size_t m_t;

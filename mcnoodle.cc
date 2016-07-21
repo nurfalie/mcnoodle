@@ -8,6 +8,30 @@ extern "C"
 
 #include "mcnoodle.h"
 
+template<class T>
+static bool matrix_inverse
+(const boost::numeric::ublas::matrix<T> &m,
+ boost::numeric::ublas::matrix<T> &inverse)
+{
+  try
+    {
+      boost::numeric::ublas::matrix<T> a(m);
+      boost::numeric::ublas::permutation_matrix<size_t> pm(a.size1());
+
+      if(boost::numeric::ublas::lu_factorize(a, pm) != 0)
+	return false;
+
+      inverse.assign(boost::numeric::ublas::identity_matrix<T> (a.size1()));
+      boost::numeric::ublas::lu_substitute(a, pm, inverse);
+    }
+  catch(...)
+    {
+      return false;
+    }
+
+  return true;
+}
+
 mcnoodle::mcnoodle(const size_t k,
 		   const size_t n,
 		   const size_t t)
@@ -360,51 +384,22 @@ bool mcnoodle::prepareS(void)
 {
   try
     {
-      /*
-      ** Generate an n x n random permutation matrix and discover its inverse.
-      */
-
-      boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> S_
-	(m_n, m_n, 0);
+      boost::numeric::ublas::matrix<double> S(m_n, m_n);
+      boost::numeric::ublas::matrix<double> Sinv(m_n, m_n);
       boost::random::uniform_int_distribution<uint64_t> distribution;
       boost::random_device random_device;
-      std::map<size_t, char> indexes;
 
-      /*
-      ** 0 ... 1 ... 0 ... 0 ...
-      ** 1 ... 0 ... 0 ... 0 ...
-      ** 0 ... 0 ... 1 ... 0 ...
-      ** 0 ... 0 ... 0 ... 0 ...
-      ** 0 ... 0 ... 0 ... 1 ...
-      ** ...
-      */
+    restart_label:
 
-      for(size_t i = 0; i < S_.size1(); i++)
-	do
-	  {
-	    size_t j = distribution(random_device) % S_.size2();
+      for(size_t i = 0; i < S.size1(); i++)
+	for(size_t j = 0; j < S.size2(); j++)
+	  S(i, j) = static_cast<double> (distribution(random_device) % 2);
 
-	    if(indexes.find(j) == indexes.end())
-	      {
-		S_(i, j) = 1;
-		indexes[j] = 0;
-		break;
-	      }
-	  }
-	while(true);
+      if(!matrix_inverse(S, Sinv))
+	goto restart_label;
 
-      /*
-      ** A permutation matrix always has an inverse.
-      */
-
-      /*
-      ** (SS^T)ij = Sum(Sik(S^T)kj, k = 1..n) = Sum(SikSjk, k = 1..n).
-      ** Sum(SikSjk, k = 1..n) = 1 if i = j, and 0 otherwise (I).
-      ** That is, SS^T = I or the inverse of S is equal to S's transpose.
-      */
-
-      m_S = S_;
-      m_Sinv = boost::numeric::ublas::trans(m_S);
+      m_S = S;
+      m_Sinv = Sinv;
     }
   catch(...)
     {
