@@ -1,8 +1,6 @@
 #ifndef _mcnoodle_h_
 #define _mcnoodle_h_
 
-#include <eigen3/Eigen/Core>
-#include <eigen3/Eigen/LU>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/iostreams/device/array.hpp>
@@ -57,7 +55,7 @@ class mcnoodle
     return m_P;
   }
 
-  boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> S(void) const
+  boost::numeric::ublas::matrix<double> S(void) const
   {
     return m_S;
   }
