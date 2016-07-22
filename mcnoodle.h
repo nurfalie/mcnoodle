@@ -1,9 +1,8 @@
 #ifndef _mcnoodle_h_
 #define _mcnoodle_h_
 
-#define BOOST_UBLAS_NDEBUG 1
-#define BOOST_UBLAS_TYPE_CHECK 0
-
+#include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/LU>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/iostreams/device/array.hpp>
@@ -82,6 +81,7 @@ class mcnoodle
      const boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> &m2);
 
  private:
+  boost::numeric::ublas::matrix<double> m_Sinv;
   boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> m_G;
   boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> m_Gcar;
 #if MCNOODLE_ARTIFICIAL_GENERATOR
@@ -90,7 +90,6 @@ class mcnoodle
   boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> m_P;
   boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> m_Pinv;
   boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> m_S;
-  boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> m_Sinv;
   size_t m_k;
   size_t m_n;
   size_t m_t;

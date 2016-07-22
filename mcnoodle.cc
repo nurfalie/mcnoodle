@@ -8,6 +8,69 @@ extern "C"
 
 #include "mcnoodle.h"
 
+template<class T>
+static bool matrix_inverse
+(const boost::numeric::ublas::matrix<T> &m,
+ boost::numeric::ublas::matrix<T> &inverse)
+{
+  try
+    {
+      boost::numeric::ublas::matrix<T> a(m);
+      boost::numeric::ublas::permutation_matrix<size_t> pm(a.size1());
+
+      if(boost::numeric::ublas::lu_factorize(a, pm) != 0)
+	return false;
+
+      inverse.assign(boost::numeric::ublas::identity_matrix<T> (a.size1()));
+      boost::numeric::ublas::lu_substitute(a, pm, inverse);
+    }
+  catch(...)
+    {
+      return false;
+    }
+
+  return true;
+}
+
+template<class T>
+static boost::numeric::ublas::matrix<T> random_permutation_matrix
+(const size_t m, const size_t n)
+{
+  /*
+  ** Generate an m x n random permutation matrix and discover its inverse.
+  */
+
+  boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> P(m, n, 0);
+  boost::random::uniform_int_distribution<uint64_t> distribution;
+  boost::random_device random_device;
+  std::map<size_t, char> indexes;
+
+  /*
+  ** 0 ... 1 ... 0 ... 0 ...
+  ** 1 ... 0 ... 0 ... 0 ...
+  ** 0 ... 0 ... 1 ... 0 ...
+  ** 0 ... 0 ... 0 ... 0 ...
+  ** 0 ... 0 ... 0 ... 1 ...
+  ** ...
+  */
+
+  for(size_t i = 0; i < P.size1(); i++)
+    do
+      {
+	size_t j = distribution(random_device) % P.size2();
+
+	if(indexes.find(j) == indexes.end())
+	  {
+	    P(i, j) = 1;
+	    indexes[j] = 0;
+	    break;
+	  }
+      }
+    while(true);
+
+  return P;
+}
+
 mcnoodle::mcnoodle(const size_t k,
 		   const size_t n,
 		   const size_t t)
@@ -303,39 +366,6 @@ bool mcnoodle::prepareP(void)
   try
     {
       /*
-      ** Generate an n x n random permutation matrix and discover its inverse.
-      */
-
-      boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> P_
-	(m_n, m_n, 0);
-      boost::random::uniform_int_distribution<uint64_t> distribution;
-      boost::random_device random_device;
-      std::map<size_t, char> indexes;
-
-      /*
-      ** 0 ... 1 ... 0 ... 0 ...
-      ** 1 ... 0 ... 0 ... 0 ...
-      ** 0 ... 0 ... 1 ... 0 ...
-      ** 0 ... 0 ... 0 ... 0 ...
-      ** 0 ... 0 ... 0 ... 1 ...
-      ** ...
-      */
-
-      for(size_t i = 0; i < P_.size1(); i++)
-	do
-	  {
-	    size_t j = distribution(random_device) % P_.size2();
-
-	    if(indexes.find(j) == indexes.end())
-	      {
-		P_(i, j) = 1;
-		indexes[j] = 0;
-		break;
-	      }
-	  }
-	while(true);
-
-      /*
       ** A permutation matrix always has an inverse.
       */
 
@@ -345,7 +375,8 @@ bool mcnoodle::prepareP(void)
       ** That is, PP^T = I or the inverse of P is equal to P's transpose.
       */
 
-      m_P = P_;
+      m_P = random_permutation_matrix<mcnoodle_matrix_element_type_t>
+	(m_n, m_n);
       m_Pinv = boost::numeric::ublas::trans(m_P);
     }
   catch(...)
@@ -361,50 +392,66 @@ bool mcnoodle::prepareS(void)
   try
     {
       /*
-      ** Generate an n x n random permutation matrix and discover its inverse.
+      ** Generate random lower and upper triangular matrices.
       */
 
-      boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> S_
-	(m_n, m_n, 0);
+      boost::numeric::ublas::matrix<double> lt(m_n, m_n, 0);
+      boost::numeric::ublas::matrix<double> ut(m_n, m_n, 0);
       boost::random::uniform_int_distribution<uint64_t> distribution;
       boost::random_device random_device;
-      std::map<size_t, char> indexes;
 
       /*
-      ** 0 ... 1 ... 0 ... 0 ...
-      ** 1 ... 0 ... 0 ... 0 ...
-      ** 0 ... 0 ... 1 ... 0 ...
-      ** 0 ... 0 ... 0 ... 0 ...
-      ** 0 ... 0 ... 0 ... 1 ...
-      ** ...
+      **
+      ** https://en.wikipedia.org/wiki/LU_decomposition
       */
 
-      for(size_t i = 0; i < S_.size1(); i++)
-	do
+      for(size_t i = 0; i < lt.size1(); i++)
+	for(size_t j = 0; j <= i; j++)
+	  if(i == j)
+	    lt(i, j) = 1;
+	  else
+	    lt(i, j) = static_cast<double> (distribution(random_device) % 2);
+
+      for(size_t i = 0; i < ut.size1(); i++)
+	for(size_t j = i; j < ut.size2(); j++)
+	  if(i == j)
+	    ut(i, j) = 1;
+	  else
+	    ut(i, j) = static_cast<double> (distribution(random_device) % 2);
+
+      /*
+      ** PS = LU, S is our random binary matrix.
+      ** S = P^-1LU = P^TLU.
+      */
+
+      boost::numeric::ublas::matrix<double> P_(m_n, m_n);
+      boost::numeric::ublas::matrix<double> S(m_n, m_n);
+
+      P_ = random_permutation_matrix<double>(m_n, m_n);
+      S = boost::numeric::ublas::prod(boost::numeric::ublas::trans(P_), lt);
+      S = boost::numeric::ublas::prod(S, ut);
+
+      boost::numeric::ublas::matrix<double> ltinv(m_n, m_n);
+      boost::numeric::ublas::matrix<double> utinv(m_n, m_n);
+
+      matrix_inverse(lt, ltinv);
+      matrix_inverse(ut, utinv);
+
+      /*
+      ** S^-1 = U^-1L^-1^(P^-1)^-1.
+      */
+
+      boost::numeric::ublas::matrix<double> Sinv(m_n, m_n);
+
+      Sinv = boost::numeric::ublas::prod(utinv, ltinv);
+      Sinv = boost::numeric::ublas::prod(Sinv, P_);
+
+      for(size_t i = 0; i < S.size1(); i++)
+	for(size_t j = 0; j < S.size2(); j++)
 	  {
-	    size_t j = distribution(random_device) % S_.size2();
-
-	    if(indexes.find(j) == indexes.end())
-	      {
-		S_(i, j) = 1;
-		indexes[j] = 0;
-		break;
-	      }
+	    m_S(i, j) = static_cast<mcnoodle_matrix_element_type_t> (S(i, j));
+	    m_Sinv(i, j) = Sinv(i, j);
 	  }
-	while(true);
-
-      /*
-      ** A permutation matrix always has an inverse.
-      */
-
-      /*
-      ** (SS^T)ij = Sum(Sik(S^T)kj, k = 1..n) = Sum(SikSjk, k = 1..n).
-      ** Sum(SikSjk, k = 1..n) = 1 if i = j, and 0 otherwise (I).
-      ** That is, SS^T = I or the inverse of S is equal to S's transpose.
-      */
-
-      m_S = S_;
-      m_Sinv = boost::numeric::ublas::trans(m_S);
     }
   catch(...)
     {
