@@ -410,14 +410,8 @@ bool mcnoodle::prepareS(void)
 
       Eigen::MatrixXd P_(m_k, m_k);
       Eigen::MatrixXd S(m_k, m_k);
-      Eigen::MatrixXd m(m_k, m_k);
 
-      m = random_permutation_matrix(m_k, m_k);
-
-      for(long int i = 0; i < m.rows(); i++)
-	for(long int j = 0; j < m.cols(); j++)
-	  P_(i, j) = m(i, j);
-
+      P_ = random_permutation_matrix(m_k, m_k);
       m_S = S = P_.transpose() * lt * ut;
 
       Eigen::MatrixXd ltinv(m_k, m_k);
