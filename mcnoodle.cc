@@ -8,42 +8,19 @@ extern "C"
 
 #include "mcnoodle.h"
 
-template<class T>
-static bool matrix_inverse
-(const boost::numeric::ublas::matrix<T> &m,
- boost::numeric::ublas::matrix<T> &inverse)
-{
-  try
-    {
-      boost::numeric::ublas::matrix<T> a(m);
-      boost::numeric::ublas::permutation_matrix<size_t> pm(a.size1());
-
-      if(boost::numeric::ublas::lu_factorize(a, pm) != 0)
-	return false;
-
-      inverse.assign(boost::numeric::ublas::identity_matrix<T> (a.size1()));
-      boost::numeric::ublas::lu_substitute(a, pm, inverse);
-    }
-  catch(...)
-    {
-      return false;
-    }
-
-  return true;
-}
-
-template<class T>
-static boost::numeric::ublas::matrix<T> random_permutation_matrix
-(const size_t m, const size_t n)
+static Eigen::MatrixXd random_permutation_matrix
+(const long int m, const long int n)
 {
   /*
   ** Generate an m x n random permutation matrix and discover its inverse.
   */
 
-  boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> P(m, n, 0);
+  Eigen::MatrixXd P(m, n);
   boost::random::uniform_int_distribution<uint64_t> distribution;
   boost::random_device random_device;
-  std::map<size_t, char> indexes;
+  std::map<long int, char> indexes;
+
+  P = Eigen::MatrixXd::Zero(m, n);
 
   /*
   ** 0 ... 1 ... 0 ... 0 ...
@@ -54,10 +31,11 @@ static boost::numeric::ublas::matrix<T> random_permutation_matrix
   ** ...
   */
 
-  for(size_t i = 0; i < P.size1(); i++)
+  for(long int i = 0; i < P.rows(); i++)
     do
       {
-	size_t j = distribution(random_device) % P.size2();
+	long int j = static_cast<long int>
+	  (distribution(random_device) % P.cols());
 
 	if(indexes.find(j) == indexes.end())
 	  {
@@ -71,9 +49,7 @@ static boost::numeric::ublas::matrix<T> random_permutation_matrix
   return P;
 }
 
-mcnoodle::mcnoodle(const size_t k,
-		   const size_t n,
-		   const size_t t)
+mcnoodle::mcnoodle(const long int k, const long int n, const long int t)
 {
   /*
   ** For generating the private and public keys.
@@ -85,23 +61,16 @@ mcnoodle::mcnoodle(const size_t k,
 
   try
     {
-      m_G.resize(m_k, m_n);
-      m_Gcar.resize(m_k, m_n);
-      m_P.resize(m_n, m_n);
-      m_Pinv.resize(m_P.size1(), m_P.size2());
-      m_S.resize(m_k, m_k);
-      m_Sinv.resize(m_S.size1(), m_S.size2());
     }
   catch(...)
     {
     }
 }
 
-mcnoodle::mcnoodle
-(const boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> &Gcar,
- const size_t k,
- const size_t n,
- const size_t t)
+mcnoodle::mcnoodle(const Eigen::MatrixXd &Gcar,
+		   const long int k,
+		   const long int n,
+		   const long int t)
 {
   /*
   ** For public-key encryption.
@@ -138,26 +107,29 @@ bool mcnoodle::decrypt(const char *ciphertext, const size_t ciphertext_size,
       ** Store the ciphertext into an 1-by-m_n vector.
       */
 
-      boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> c(1, m_n);
+      boost::numeric::ublas::matrix<double> c_(1, m_n);
 
-      if(!deserialize(ciphertext, ciphertext_size, c))
+      if(!deserialize(ciphertext, ciphertext_size, c_))
 	{
 	  rc = false;
 	  goto done_label;
 	}
 
-      boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> ccar
-	(1, m_n);
-      boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> m
-	(1, m_k);
-      boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> mcar
-	(1, m_k);
+      Eigen::MatrixXd c(1, m_n);
 
-      ccar = boost::numeric::ublas::prod(c, m_Pinv);
+      for(size_t i = 0; i < c_.size1(); i++)
+	for(size_t j = 0; j < c_.size2(); j++)
+	  c(static_cast<long int> (i),
+	    static_cast<long int> (j)) = c_(i, j);
+
+      Eigen::MatrixXd ccar(1, m_n);
+      Eigen::MatrixXd m(1, m_k);
+      Eigen::MatrixXd mcar(1, m_k);
+
+      ccar = c * m_Pinv;
 
 #ifdef MCNOODLE_ARTIFICIAL_GENERATOR
-      mcar = boost::numeric::ublas::prod(ccar, m_Ginv);
-      m = boost::numeric::ublas::prod(mcar, m_Sinv);
+      m = ccar * m_Ginv * m_Sinv;
 #else
 #endif
 
@@ -166,10 +138,10 @@ bool mcnoodle::decrypt(const char *ciphertext, const size_t ciphertext_size,
       */
 
       *plaintext_size = static_cast<size_t>
-	(std::ceil(m.size2() / CHAR_BIT)); /*
-					   ** m_n is not necessarily a multiple
-					   ** of CHAR_BIT.
-					   */
+	(std::ceil(m.cols() / CHAR_BIT)); /*
+					  ** m_n is not necessarily a multiple
+					  ** of CHAR_BIT.
+					  */
 
       if(*plaintext_size <= 0) // Unlikely.
 	{
@@ -180,12 +152,12 @@ bool mcnoodle::decrypt(const char *ciphertext, const size_t ciphertext_size,
       plaintext = new char[*plaintext_size];
       memset(plaintext, 0, *plaintext_size);
 
-      for(size_t i = 0, k = 0; i < m.size2(); k++)
+      for(long int i = 0, k = 0; i < m.cols(); k++)
 	{
 	  std::bitset<CHAR_BIT> b;
 
-	  for(size_t j = 0; j < CHAR_BIT && i < m.size2(); i++, j++)
-	    b[j] = m(0, i);
+	  for(long int j = 0; j < CHAR_BIT && i < m.cols(); i++, j++)
+	    b[static_cast<size_t> (j)] = m(0, i);
 
 	  plaintext[k] = static_cast<char> (b.to_ulong());
 	}
@@ -208,7 +180,7 @@ bool mcnoodle::decrypt(const char *ciphertext, const size_t ciphertext_size,
 
 bool mcnoodle::deserialize
 (const char *buffer, const size_t buffer_size,
- boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> &m)
+ boost::numeric::ublas::matrix<double> &m)
 {
   if(!buffer || buffer_size <= 0)
     return false;
@@ -235,7 +207,7 @@ bool mcnoodle::encrypt(const char *plaintext, const size_t plaintext_size,
   if(ciphertext || !ciphertext_size || !plaintext || plaintext_size <= 0)
     return false;
 
-  if(CHAR_BIT * plaintext_size > m_k)
+  if(CHAR_BIT * plaintext_size > static_cast<size_t> (m_k))
     return false;
 
   try
@@ -244,15 +216,17 @@ bool mcnoodle::encrypt(const char *plaintext, const size_t plaintext_size,
       ** Represent the message as a binary vector of length k.
       */
 
-      boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> m
-	(1, m_k, 0);
+      Eigen::MatrixXd m(1, m_k);
+
+      m = Eigen::MatrixXd::Zero(1, m_k);
 
       for(size_t i = 0, k = 0; i < plaintext_size; i++)
 	{
 	  std::bitset<CHAR_BIT> b(plaintext[i]);
 
-	  for(size_t j = 0; j < b.size() && k < m.size2(); j++, k++)
-	    m(0, k) = b[j];
+	  for(long int j = 0; static_cast<size_t> (j) < b.size() &&
+		static_cast<long> (k) < m.cols(); j++, k++)
+	    m(0, k) = b[static_cast<size_t> (j)];
 	}
 
 #ifdef MCNOODLE_ARTIFICIAL_GENERATOR
@@ -261,9 +235,9 @@ bool mcnoodle::encrypt(const char *plaintext, const size_t plaintext_size,
       ** are correct without a generator G matrix.
       */
 
-      boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> c(1, m_n);
+      Eigen::MatrixXd c(1, m_n);
 
-      c = boost::numeric::ublas::prod(m, m_Gcar);
+      c = m * m_Gcar;
 #else
       /*
       ** Generate a random binary vector of length n having at most t 1s.
@@ -302,7 +276,13 @@ bool mcnoodle::encrypt(const char *plaintext, const size_t plaintext_size,
       ** Place c into ciphertext. The user is responsible for restoring memory.
       */
 
-      return serialize(ciphertext, ciphertext_size, c);
+      boost::numeric::ublas::matrix<double> c_(1, m_n);
+
+      for(long int i = 0; i < c.rows(); i++)
+	for(long int j = 0; j < c.cols(); j++)
+	  c_(static_cast<size_t> (i), static_cast<size_t> (j)) = c(i, j);
+
+      return serialize(ciphertext, ciphertext_size, c_);
     }
   catch(...)
     {
@@ -313,16 +293,21 @@ bool mcnoodle::encrypt(const char *plaintext, const size_t plaintext_size,
     }
 }
 
-bool mcnoodle::equal
-(const boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> &m1,
- const boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> &m2)
+bool mcnoodle::equal(const Eigen::MatrixXd &m1, const Eigen::MatrixXd &m2)
 {
-  if(m1.size1() != m2.size1() || m1.size2() != m2.size2())
+  return m1 == m2;
+}
+
+bool mcnoodle::equal(const Eigen::MatrixXd &m1,
+		     const boost::numeric::ublas::matrix<double> &m2)
+{
+  if(m1.cols() != static_cast<long int> (m2.size2()) ||
+     m1.rows() != static_cast<long int> (m2.size1()))
     return false;
 
-  for(size_t i = 0; i < m1.size1(); i++)
-    for(size_t j = 0; j < m1.size2(); j++)
-      if(m1(i, j) != m2(i, j))
+  for(long int i = 0; i < m1.rows(); i++)
+    for(long int j = 0; j < m1.cols(); j++)
+      if(m1(i, j) != m2(static_cast<long int> (i), static_cast<long int> (j)))
 	return false;
 
   return true;
@@ -333,8 +318,7 @@ bool mcnoodle::prepareG(void)
   try
     {
 #ifdef MCNOODLE_ARTIFICIAL_GENERATOR
-      m_G = boost::numeric::ublas::identity_matrix
-	<mcnoodle_matrix_element_type_t> (m_G.size1());
+      m_G = Eigen::MatrixXd::Identity(m_k, m_n);
       m_Ginv = m_G;
 #endif
     }
@@ -350,8 +334,7 @@ bool mcnoodle::prepareGcar(void)
 {
   try
     {
-      m_Gcar = boost::numeric::ublas::prod(m_S, m_G);
-      m_Gcar = boost::numeric::ublas::prod(m_Gcar, m_P);
+      m_Gcar = m_S * m_G * m_P;
     }
   catch(...)
     {
@@ -375,9 +358,8 @@ bool mcnoodle::prepareP(void)
       ** That is, PP^T = I or the inverse of P is equal to P's transpose.
       */
 
-      m_P = random_permutation_matrix<mcnoodle_matrix_element_type_t>
-	(m_n, m_n);
-      m_Pinv = boost::numeric::ublas::trans(m_P);
+      m_P = random_permutation_matrix(m_n, m_n);
+      m_Pinv = m_P.transpose();
     }
   catch(...)
     {
@@ -395,25 +377,27 @@ bool mcnoodle::prepareS(void)
       ** Generate random lower and upper triangular matrices.
       */
 
-      boost::numeric::ublas::matrix<double> lt(m_n, m_n, 0);
-      boost::numeric::ublas::matrix<double> ut(m_n, m_n, 0);
+      Eigen::MatrixXd lt(m_k, m_k);
+      Eigen::MatrixXd ut(m_k, m_k);
       boost::random::uniform_int_distribution<uint64_t> distribution;
       boost::random_device random_device;
+
+      lt = ut = Eigen::MatrixXd::Zero(m_k, m_k);
 
       /*
       **
       ** https://en.wikipedia.org/wiki/LU_decomposition
       */
 
-      for(size_t i = 0; i < lt.size1(); i++)
-	for(size_t j = 0; j <= i; j++)
+      for(long int i = 0; i < lt.rows(); i++)
+	for(long int j = 0; j <= i; j++)
 	  if(i == j)
 	    lt(i, j) = 1;
 	  else
 	    lt(i, j) = static_cast<double> (distribution(random_device) % 2);
 
-      for(size_t i = 0; i < ut.size1(); i++)
-	for(size_t j = i; j < ut.size2(); j++)
+      for(long int i = 0; i < ut.rows(); i++)
+	for(long int j = i; j < ut.cols(); j++)
 	  if(i == j)
 	    ut(i, j) = 1;
 	  else
@@ -424,34 +408,31 @@ bool mcnoodle::prepareS(void)
       ** S = P^-1LU = P^TLU.
       */
 
-      boost::numeric::ublas::matrix<double> P_(m_n, m_n);
-      boost::numeric::ublas::matrix<double> S(m_n, m_n);
+      Eigen::MatrixXd P_(m_k, m_k);
+      Eigen::MatrixXd S(m_k, m_k);
+      Eigen::MatrixXd m(m_k, m_k);
 
-      P_ = random_permutation_matrix<double>(m_n, m_n);
-      S = boost::numeric::ublas::prod(boost::numeric::ublas::trans(P_), lt);
-      S = boost::numeric::ublas::prod(S, ut);
+      m = random_permutation_matrix(m_k, m_k);
 
-      boost::numeric::ublas::matrix<double> ltinv(m_n, m_n);
-      boost::numeric::ublas::matrix<double> utinv(m_n, m_n);
+      for(long int i = 0; i < m.rows(); i++)
+	for(long int j = 0; j < m.cols(); j++)
+	  P_(i, j) = m(i, j);
 
-      matrix_inverse(lt, ltinv);
-      matrix_inverse(ut, utinv);
+      m_S = S = P_.transpose() * lt * ut;
+
+      Eigen::MatrixXd ltinv(m_k, m_k);
+      Eigen::MatrixXd utinv(m_k, m_k);
+
+      ltinv = lt.inverse();
+      utinv = ut.inverse();
 
       /*
       ** S^-1 = U^-1L^-1^(P^-1)^-1.
       */
 
-      boost::numeric::ublas::matrix<double> Sinv(m_n, m_n);
+      Eigen::MatrixXd Sinv(m_k, m_k);
 
-      Sinv = boost::numeric::ublas::prod(utinv, ltinv);
-      Sinv = boost::numeric::ublas::prod(Sinv, P_);
-
-      for(size_t i = 0; i < S.size1(); i++)
-	for(size_t j = 0; j < S.size2(); j++)
-	  {
-	    m_S(i, j) = static_cast<mcnoodle_matrix_element_type_t> (S(i, j));
-	    m_Sinv(i, j) = Sinv(i, j);
-	  }
+      m_Sinv = Sinv = utinv * ltinv * P_;
     }
   catch(...)
     {
@@ -461,20 +442,28 @@ bool mcnoodle::prepareS(void)
   return true;
 }
 
-bool mcnoodle::serialize
-(char *&buffer,
- size_t *buffer_size,
- const boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> &m)
+bool mcnoodle::serialize(char *&buffer,
+			 size_t *buffer_size,
+			 const Eigen::MatrixXd &m)
+{
+  boost::numeric::ublas::matrix<double> m_
+    (static_cast<size_t> (m.rows()), static_cast<size_t> (m.cols()));
+
+  for(long int i = 0; i < m.rows(); i++)
+    for(long int j = 0; j < m.cols(); j++)
+      m_(static_cast<size_t> (i), static_cast<size_t> (j)) = m(i, j);
+
+  return serialize(buffer, buffer_size, m_);
+}
+
+bool mcnoodle::serialize(char *&buffer,
+			 size_t *buffer_size,
+			 const boost::numeric::ublas::matrix<double> &m)
 {
   if(buffer || !buffer_size)
     return false;
 
-  /*
-  ** We'd like support char types (sizeof(...) + 1).
-  */
-
-  *buffer_size = (sizeof(mcnoodle_matrix_element_type_t) + 1) *
-    (sizeof(mcnoodle_matrix_element_type_t) + 1) * m.size1() * m.size2();
+  *buffer_size = sizeof(double) * sizeof(double) * m.size1() * m.size2();
 
   if(*buffer_size == 0) // Possible?
     return false;

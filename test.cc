@@ -13,7 +13,7 @@ int test1(void)
 
   std::cout << "Testing decryption and encryption... ";
 
-  mcnoodle m(100, 100, 38);
+  mcnoodle m(1024, 1024, 38);
 
   rc &= m.prepareP();
   rc &= m.prepareS();
@@ -48,7 +48,7 @@ int test2(void)
 
   std::cout << "Testing matrix equality and serialization... ";
 
-  mcnoodle m(100, 100, 38);
+  mcnoodle m(1269, 1632, 34);
 
   m.prepareS();
 
@@ -57,7 +57,7 @@ int test2(void)
 
   m.serialize(c, &c_size, m.S());
 
-  boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> matrix;
+  boost::numeric::ublas::matrix<double> matrix;
 
   m.deserialize(c, c_size, matrix);
 
@@ -72,9 +72,6 @@ int test2(void)
 
 int main(void)
 {
-  // mcnoodle m(1269, 1632, 34);
-  // mcnoodle m(644, 1024, 38);
-
   int rc = 1;
 
   rc &= !test1();

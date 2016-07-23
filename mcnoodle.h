@@ -1,6 +1,8 @@
 #ifndef _mcnoodle_h_
 #define _mcnoodle_h_
 
+#include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/LU>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/iostreams/device/array.hpp>
@@ -11,18 +13,25 @@
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/random.hpp>
 
-typedef int mcnoodle_matrix_element_type_t;
-
 class mcnoodle
 {
  public:
-  mcnoodle(const size_t k, const size_t n, const size_t t);
-  mcnoodle
-    (const boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> &Gcar,
-     const size_t k,
-     const size_t n,
-     const size_t t);
+  mcnoodle(const long int k, const long int n, const long int t);
+  mcnoodle(const Eigen::MatrixXd &Gcar,
+	   const long int k,
+	   const long int n,
+	   const long int t);
   ~mcnoodle();
+
+  Eigen::MatrixXd P(void) const
+  {
+    return m_P;
+  }
+
+  Eigen::MatrixXd S(void) const
+  {
+    return m_S;
+  }
 
   /*
   ** The contents of plaintext must be deallocated via delete [].
@@ -32,7 +41,7 @@ class mcnoodle
 	       char *&plaintext, size_t *plaintext_size);
   bool deserialize
     (const char *buffer, const size_t buffer_size,
-     boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> &m);
+     boost::numeric::ublas::matrix<double> &m);
 
   /*
   ** The contents of ciphertext must be deallocated via delete [].
@@ -45,77 +54,69 @@ class mcnoodle
   ** The contents of buffer must be deallocated via delete [].
   */
 
-  bool serialize
-    (char *&buffer,
-     size_t *buffer_size,
-     const boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> &m);
+  bool serialize(char *&buffer,
+		 size_t *buffer_size,
+		 const Eigen::MatrixXd &m);
+  bool serialize(char *&buffer,
+		 size_t *buffer_size,
+		 const boost::numeric::ublas::matrix<double> &m);
 
-  boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> P(void) const
+  long int pSize(void) const
   {
-    return m_P;
+    return m_P.rows(); // Square matrix.
   }
 
-  boost::numeric::ublas::matrix<double> S(void) const
+  long int sSize(void) const
   {
-    return m_S;
-  }
-
-  size_t pSize(void) const
-  {
-    return m_P.size1(); // Square matrix.
-  }
-
-  size_t sSize(void) const
-  {
-    return m_S.size1(); // Square matrix.
+    return m_S.rows(); // Square matrix.
   }
 
   bool prepareG(void);
   bool prepareGcar(void);
   bool prepareP(void);
   bool prepareS(void);
-  static bool equal
-    (const boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> &m1,
-     const boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> &m2);
+  static bool equal(const Eigen::MatrixXd &m1, const Eigen::MatrixXd &m2);
+  static bool equal(const Eigen::MatrixXd &m1,
+		    const boost::numeric::ublas::matrix<double> &m2);
 
  private:
-  boost::numeric::ublas::matrix<double> m_Sinv;
-  boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> m_G;
-  boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> m_Gcar;
+  Eigen::MatrixXd m_G;
+  Eigen::MatrixXd m_Gcar;
 #if MCNOODLE_ARTIFICIAL_GENERATOR
-  boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> m_Ginv;
+  Eigen::MatrixXd m_Ginv;
 #endif
-  boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> m_P;
-  boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> m_Pinv;
-  boost::numeric::ublas::matrix<mcnoodle_matrix_element_type_t> m_S;
-  size_t m_k;
-  size_t m_n;
-  size_t m_t;
+  Eigen::MatrixXd m_P;
+  Eigen::MatrixXd m_Pinv;
+  Eigen::MatrixXd m_S;
+  Eigen::MatrixXd m_Sinv;
+  long int m_k;
+  long int m_n;
+  long int m_t;
 
-  size_t minimumK(const size_t k) const
+  long int minimumK(const long int k) const
   {
 #ifdef MCNOODLE_ASSUME_SAFE_PARAMETERS
     return k;
 #else
-    return std::max(static_cast<size_t> (644), k);
+    return std::max(static_cast<long int> (644), k);
 #endif
   }
 
-  size_t minimumN(const size_t n) const
+  long int minimumN(const long int n) const
   {
 #ifdef MCNOODLE_ASSUME_SAFE_PARAMETERS
     return n;
 #else
-    return std::max(static_cast<size_t> (1024), n);
+    return std::max(static_cast<long int> (1024), n);
 #endif
   }
 
-  size_t minimumT(const size_t t) const
+  long int minimumT(const long int t) const
   {
 #ifdef MCNOODLE_ASSUME_SAFE_PARAMETERS
     return t;
 #else
-    return std::max(static_cast<size_t> (38), t);
+    return std::max(static_cast<long int> (38), t);
 #endif
   }
 };
