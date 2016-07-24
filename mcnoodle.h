@@ -10,6 +10,7 @@
 #include <boost/random.hpp>
 
 #ifdef MCNOODLE_OS_UNIX
+#include <NTL/mat_ZZ_p.h>
 #endif
 
 class mcnoodle
@@ -49,6 +50,8 @@ class mcnoodle
   bool prepareS(void);
 
  private:
+  NTL::mat_ZZ_p m_S;
+  NTL::mat_ZZ_p m_Sinv;
   size_t m_k;
   size_t m_n;
   size_t m_t;

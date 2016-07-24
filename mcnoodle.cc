@@ -12,12 +12,17 @@ mcnoodle::mcnoodle(const size_t k,
 		   const size_t n,
 		   const size_t t)
 {
+  NTL::ZZ p(2);
+
+  NTL::ZZ_p::init(p);
   m_k = minimumK(k);
   m_n = minimumN(n);
   m_t = minimumT(t);
 
   try
     {
+      m_S.SetDims(m_k, m_k);
+      m_Sinv.SetDims(m_k, m_k);
     }
   catch(...)
     {
@@ -115,6 +120,23 @@ bool mcnoodle::prepareS(void)
 {
   try
     {
+      NTL::ZZ_p determinant;
+      boost::random::uniform_int_distribution<uint64_t> distribution;
+      boost::random_device random_device;
+
+    restart_label:
+
+      for(size_t i = 0; i < m_k; i++)
+	for(size_t j = 0; j < m_k; j++)
+	  if(i == j)
+	    m_S[i][j] = 1;
+	  else
+	    m_S[i][j] = static_cast<int> (distribution(random_device) % 2);
+
+      NTL::inv(determinant, m_Sinv, m_S);
+
+      if(determinant == 0)
+	goto restart_label;
     }
   catch(...)
     {

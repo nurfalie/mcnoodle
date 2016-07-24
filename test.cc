@@ -9,8 +9,10 @@ extern "C"
 
 int test1(void)
 {
+  mcnoodle m(1269, 1632, 34);
   int rc = 1;
 
+  m.prepareS();
   return rc;
 }
 
