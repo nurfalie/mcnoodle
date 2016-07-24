@@ -9,6 +9,9 @@
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/random.hpp>
 
+#ifdef MCNOODLE_OS_UNIX
+#endif
+
 class mcnoodle
 {
  public:
