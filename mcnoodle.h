@@ -5,26 +5,17 @@
 #include <NTL/mat_ZZ_p.h>
 #endif
 
+#include <sstream>
+
 class mcnoodle
 {
  public:
   mcnoodle(const size_t k, const size_t n, const size_t t);
   ~mcnoodle();
-
-  /*
-  ** The contents of plaintext must be deallocated via delete [].
-  */
-
-  bool decrypt(const char *ciphertext, const size_t ciphertext_size,
-	       char *&plaintext, size_t *plaintext_size);
-
-  /*
-  ** The contents of ciphertext must be deallocated via delete [].
-  */
-
+  bool decrypt(const std::stringstream &ciphertext,
+	       std::stringstream &plaintext);
   bool encrypt(const char *plaintext, const size_t plaintext_size,
-	       char *&ciphertext, size_t *ciphertext_size);
-
+	       std::stringstream &ciphertext);
   bool prepareG(void);
   bool prepareGcar(void);
   bool prepareP(void);

@@ -2,6 +2,7 @@ extern "C"
 {
 #include <inttypes.h>
 #include <limits.h>
+#include <string.h>
 }
 
 #include <bitset>
@@ -20,6 +21,10 @@ mcnoodle::mcnoodle(const size_t k,
   m_k = minimumK(k);
   m_n = minimumN(n);
   m_t = minimumT(t);
+
+#ifdef MCNOODLE_ARTIFICIAL_GENERATOR
+  m_n = m_k;
+#endif
 
   try
     {
@@ -47,19 +52,65 @@ mcnoodle::~mcnoodle()
 {
 }
 
-bool mcnoodle::decrypt(const char *ciphertext, const size_t ciphertext_size,
-		       char *&plaintext, size_t *plaintext_size)
+bool mcnoodle::decrypt(const std::stringstream &ciphertext,
+		       std::stringstream &plaintext)
 {
-  if(!ciphertext || ciphertext_size <= 0 || plaintext || !plaintext_size)
-    return false;
+  char *p = 0;
+
+  try
+    {
+      NTL::mat_ZZ_p c;
+      std::stringstream s;
+
+      s << ciphertext.rdbuf();
+      s >> c;
+
+      NTL::mat_ZZ_p ccar;
+      NTL::mat_ZZ_p m;
+
+      ccar = c * m_Pinv;
+#ifdef MCNOODLE_ARTIFICIAL_GENERATOR
+      m = ccar * m_Ginv * m_Sinv;
+#endif
+
+      size_t plaintext_size = static_cast<size_t>
+	(std::ceil(m.NumCols() / CHAR_BIT)); /*
+					     ** m_n is not necessarily
+					     ** a multiple of CHAR_BIT.
+					     */
+
+      if(plaintext_size <= 0) // Unlikely.
+	return false;
+
+      p = new char[plaintext_size];
+      memset(p, 0, plaintext_size);
+
+      for(long int i = 0, k = 0; i < m.NumCols(); k++)
+	{
+	  std::bitset<CHAR_BIT> b;
+
+	  for(long int j = 0; j < CHAR_BIT && i < m.NumCols(); i++, j++)
+	    b[static_cast<size_t> (j)] = m[0][i] == 0 ? 0 : 1;
+
+	  p[k] = static_cast<char> (b.to_ulong());
+	}
+
+      plaintext << p;
+      delete []p;
+    }
+  catch(...)
+    {
+      delete []p;
+      return false;
+    }
 
   return true;
 }
 
 bool mcnoodle::encrypt(const char *plaintext, const size_t plaintext_size,
-		       char *&ciphertext, size_t *ciphertext_size)
+		       std::stringstream &ciphertext)
 {
-  if(ciphertext || !ciphertext_size || !plaintext || plaintext_size <= 0)
+  if(!plaintext || plaintext_size <= 0)
     return false;
 
   if(CHAR_BIT * plaintext_size > static_cast<size_t> (m_k))
@@ -90,10 +141,7 @@ bool mcnoodle::encrypt(const char *plaintext, const size_t plaintext_size,
       ** are correct without a generator G matrix.
       */
 
-      NTL::mat_ZZ_p c;
-
-      c.SetDims(1, static_cast<long int> (m_n));
-      c = m * m_Gcar;
+      ciphertext << m * m_Gcar;
 #else
 #endif
     }
@@ -208,6 +256,8 @@ bool mcnoodle::prepareS(void)
 	  std::cerr << "Zero determinant!\n";
 	  goto restart_label;
 	}
+
+      std::string a;
     }
   catch(...)
     {

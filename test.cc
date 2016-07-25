@@ -9,11 +9,21 @@ extern "C"
 
 int test1(void)
 {
-  mcnoodle m(1269, 1632, 34);
   int rc = 1;
+  mcnoodle m(1269, 1632, 34);
 
+  m.prepareG();
   m.prepareP();
   m.prepareS();
+  m.prepareGcar();
+
+  char p[] = "Hello. This is a friendly test.";
+  std::stringstream cstream;
+  std::stringstream pstream;
+
+  rc &= m.encrypt(p, strlen(p), cstream);
+  rc &= m.decrypt(cstream, pstream);
+  std::cout << "After decryption: \"" << pstream.str() << "\".\n";
   return rc;
 }
 
