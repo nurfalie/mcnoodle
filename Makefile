@@ -1,7 +1,6 @@
 CXXFLAGS = -O3 -Wall -Werror -Wextra \
 	   -Wformat=2 -Wno-unused-function -Wno-unused-parameter \
-	   -Wpointer-arith \
-	   -Wstrict-overflow=5 -mtune=native
+	   -Wpointer-arith -Wstrict-overflow=1 -mtune=native
 DEFINES	= -DMCNOODLE_ARTIFICIAL_GENERATOR=1 \
 	  -DMCNOODLE_ASSUME_SAFE_PARAMETERS=1 \
 	  -DMCNOODLE_OS_UNIX=1
