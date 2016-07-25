@@ -7,8 +7,7 @@ DEFINES	= -DMCNOODLE_ARTIFICIAL_GENERATOR=1 \
 	  -DMCNOODLE_OS_UNIX=1
 
 INCLUDES = -I ntl.d/unix.d/ntl-9.10.0/include
-LIBRARIES = -lboost_random -lboost_serialization -lboost_system \
-	    -l:libraries.d/ntl.a
+LIBRARIES = -l:libraries.d/ntl.a
 
 OBJECT_FILES = mcnoodle.o mcnoodle-goppa.o
 

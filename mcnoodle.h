@@ -1,14 +1,6 @@
 #ifndef _mcnoodle_h_
 #define _mcnoodle_h_
 
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/iostreams/device/array.hpp>
-#include <boost/iostreams/stream.hpp>
-#include <boost/nondet_random.hpp>
-#include <boost/numeric/ublas/matrix.hpp>
-#include <boost/random.hpp>
-
 #ifdef MCNOODLE_OS_UNIX
 #include <NTL/mat_ZZ_p.h>
 #endif
@@ -25,9 +17,6 @@ class mcnoodle
 
   bool decrypt(const char *ciphertext, const size_t ciphertext_size,
 	       char *&plaintext, size_t *plaintext_size);
-  template<class T> bool deserialize(const char *buffer,
-				     const size_t buffer_size,
-				     boost::numeric::ublas::matrix<T> &m);
 
   /*
   ** The contents of ciphertext must be deallocated via delete [].
@@ -35,14 +24,6 @@ class mcnoodle
 
   bool encrypt(const char *plaintext, const size_t plaintext_size,
 	       char *&ciphertext, size_t *ciphertext_size);
-
-  /*
-  ** The contents of buffer must be deallocated via delete [].
-  */
-
-  template<class T> bool serialize(char *&buffer,
-				   size_t *buffer_size,
-				   const boost::numeric::ublas::matrix<T> &m);
 
   bool prepareG(void);
   bool prepareGcar(void);

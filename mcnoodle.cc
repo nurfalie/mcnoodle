@@ -42,30 +42,6 @@ bool mcnoodle::decrypt(const char *ciphertext, const size_t ciphertext_size,
   return true;
 }
 
-template<class T>
-bool mcnoodle::deserialize
-(const char *buffer, const size_t buffer_size,
- boost::numeric::ublas::matrix<T> &m)
-{
-  if(!buffer || buffer_size <= 0)
-    return false;
-
-  try
-    {
-      boost::iostreams::array_source source(buffer, buffer_size);
-      boost::iostreams::stream<boost::iostreams::array_source> stream(source);
-      boost::archive::binary_iarchive archive(stream);
-
-      archive >> m;
-    }
-  catch(...)
-    {
-      return false;
-    }
-
-  return true;
-}
-
 bool mcnoodle::encrypt(const char *plaintext, const size_t plaintext_size,
 		       char *&ciphertext, size_t *ciphertext_size)
 {
@@ -121,8 +97,6 @@ bool mcnoodle::prepareS(void)
   try
     {
       NTL::ZZ_p determinant;
-      boost::random::uniform_int_distribution<uint64_t> distribution;
-      boost::random_device random_device;
 
     restart_label:
 
@@ -131,7 +105,7 @@ bool mcnoodle::prepareS(void)
 	  if(i == j)
 	    m_S[i][j] = 1;
 	  else
-	    m_S[i][j] = static_cast<int> (distribution(random_device) % 2);
+	    m_S[i][j] = NTL::RandomBnd(2);
 
       NTL::inv(determinant, m_Sinv, m_S);
 
@@ -140,41 +114,6 @@ bool mcnoodle::prepareS(void)
     }
   catch(...)
     {
-      return false;
-    }
-
-  return true;
-}
-
-template<class T>
-bool mcnoodle::serialize(char *&buffer,
-			 size_t *buffer_size,
-			 const boost::numeric::ublas::matrix<T> &m)
-{
-  if(buffer || !buffer_size)
-    return false;
-
-  *buffer_size = sizeof(double) * sizeof(double) * m.size1() * m.size2();
-
-  if(*buffer_size == 0) // Possible?
-    return false;
-
-  buffer = new char[*buffer_size];
-  memset(buffer, 0, *buffer_size);
-
-  try
-    {
-      boost::iostreams::array_sink sink(buffer, *buffer_size);
-      boost::iostreams::stream<boost::iostreams::array_sink> stream(sink);
-      boost::archive::binary_oarchive archive(stream);
-
-      archive << m;
-    }
-  catch(...)
-    {
-      delete []buffer;
-      buffer = 0;
-      *buffer_size = 0;
       return false;
     }
 
