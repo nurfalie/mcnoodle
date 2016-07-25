@@ -65,6 +65,9 @@ bool mcnoodle::decrypt(const std::stringstream &ciphertext,
       s << ciphertext.rdbuf();
       s >> c;
 
+      if(c.NumCols() != static_cast<long int> (m_n) && c.NumRows() != 1)
+	return false;
+
       NTL::mat_ZZ_p ccar;
       NTL::mat_ZZ_p m;
 
