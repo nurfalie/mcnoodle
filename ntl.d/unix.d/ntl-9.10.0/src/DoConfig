@@ -60,7 +60,7 @@
 'NTL_ENABLE_TLS_HACK'     => 'off',
 'NTL_EXCEPTIONS'          => 'off',
 'NTL_THREAD_BOOST'        => 'off',
-'NTL_GMP_LIP'             => 'on',
+'NTL_GMP_LIP'             => 'off',
 'NTL_GF2X_LIB'            => 'off',
 'NTL_X86_FIX'             => 'off',
 'NTL_NO_X86_FIX'          => 'off',
