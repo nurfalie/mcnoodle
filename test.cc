@@ -12,6 +12,7 @@ int test1(void)
   mcnoodle m(1269, 1632, 34);
   int rc = 1;
 
+  m.prepareP();
   m.prepareS();
   return rc;
 }
@@ -27,7 +28,7 @@ int main(void)
 {
   int rc = 1;
 
-  rc &= !test1();
-  rc &= !test2();
+  rc &= test1();
+  rc &= test2();
   return !rc;
 }

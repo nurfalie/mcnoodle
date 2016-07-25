@@ -4,6 +4,7 @@ extern "C"
 }
 
 #include <bitset>
+#include <limits>
 #include <map>
 
 #include "mcnoodle.h"
@@ -21,8 +22,14 @@ mcnoodle::mcnoodle(const size_t k,
 
   try
     {
-      m_S.SetDims(m_k, m_k);
-      m_Sinv.SetDims(m_k, m_k);
+      m_P.SetDims(static_cast<long int> (m_n),
+		  static_cast<long int> (m_n));
+      m_Pinv.SetDims(static_cast<long int> (m_n),
+		     static_cast<long int> (m_n));
+      m_S.SetDims(static_cast<long int> (m_k),
+		  static_cast<long int> (m_k));
+      m_Sinv.SetDims(static_cast<long int> (m_k),
+		     static_cast<long int> (m_k));
     }
   catch(...)
     {
@@ -83,6 +90,42 @@ bool mcnoodle::prepareP(void)
 {
   try
     {
+      std::map<long int, char> indexes;
+
+      /*
+      ** 0 ... 1 ... 0 ... 0 ...
+      ** 1 ... 0 ... 0 ... 0 ...
+      ** 0 ... 0 ... 1 ... 0 ...
+      ** 0 ... 0 ... 0 ... 0 ...
+      ** 0 ... 0 ... 0 ... 1 ...
+      ** ...
+      */
+
+      for(long int i = 0; i < m_P.NumRows(); i++)
+	do
+	  {
+	    long int j = NTL::RandomBnd(m_P.NumCols());
+
+	    if(indexes.find(j) == indexes.end())
+	      {
+		m_P[i][j] = 1;
+		indexes[j] = 0;
+		break;
+	      }
+	  }
+	while(true);
+
+      /*
+      ** A permutation matrix always has an inverse.
+      */
+
+      /*
+      ** (PP^T)ij = Sum(Pik(P^T)kj, k = 1..n) = Sum(PikPjk, k = 1..n).
+      ** Sum(PikPjk, k = 1..n) = 1 if i = j, and 0 otherwise (I).
+      ** That is, PP^T = I or the inverse of P is equal to P's transpose.
+      */
+
+      NTL::transpose(m_Pinv, m_P);
     }
   catch(...)
     {
@@ -105,12 +148,16 @@ bool mcnoodle::prepareS(void)
 	  if(i == j)
 	    m_S[i][j] = 1;
 	  else
-	    m_S[i][j] = NTL::RandomBnd(2);
+	    m_S[i][j] = NTL::RandomBnd
+	      (static_cast<int> (std::numeric_limits<uint64_t>::max() % 2));
 
       NTL::inv(determinant, m_Sinv, m_S);
 
       if(determinant == 0)
-	goto restart_label;
+	{
+	  std::cerr << "Zero determinant!\n";
+	  goto restart_label;
+	}
     }
   catch(...)
     {
