@@ -31,6 +31,9 @@ class mcnoodle
   bool prepareS(void);
 
  private:
+  NTL::mat_ZZ_p m_G;
+  NTL::mat_ZZ_p m_Gcar;
+  NTL::mat_ZZ_p m_Ginv;
   NTL::mat_ZZ_p m_P;
   NTL::mat_ZZ_p m_Pinv;
   NTL::mat_ZZ_p m_S;

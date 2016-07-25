@@ -1,6 +1,7 @@
 extern "C"
 {
 #include <inttypes.h>
+#include <limits.h>
 }
 
 #include <bitset>
@@ -22,6 +23,12 @@ mcnoodle::mcnoodle(const size_t k,
 
   try
     {
+      m_G.SetDims(static_cast<long int> (m_n),
+		  static_cast<long int> (m_k));
+      m_Gcar.SetDims(static_cast<long int> (m_n),
+		     static_cast<long int> (m_k));
+      m_Ginv.SetDims(static_cast<long int> (m_n),
+		     static_cast<long int> (m_k));
       m_P.SetDims(static_cast<long int> (m_n),
 		  static_cast<long int> (m_n));
       m_Pinv.SetDims(static_cast<long int> (m_n),
@@ -55,6 +62,46 @@ bool mcnoodle::encrypt(const char *plaintext, const size_t plaintext_size,
   if(ciphertext || !ciphertext_size || !plaintext || plaintext_size <= 0)
     return false;
 
+  if(CHAR_BIT * plaintext_size > static_cast<size_t> (m_k))
+    return false;
+
+  try
+    {
+      /*
+      ** Represent the message as a binary vector of length k.
+      */
+
+      NTL::mat_ZZ_p m;
+
+      m.SetDims(1, static_cast<long int> (m_k));
+
+      for(size_t i = 0, k = 0; i < plaintext_size; i++)
+	{
+	  std::bitset<CHAR_BIT> b(plaintext[i]);
+
+	  for(long int j = 0; static_cast<size_t> (j) < b.size() &&
+		static_cast<long int> (k) < m.NumCols(); j++, k++)
+	    m[0][k] = b[static_cast<size_t> (j)];
+	}
+
+#ifdef MCNOODLE_ARTIFICIAL_GENERATOR
+      /*
+      ** This will allow us to prove that decryption and encryption
+      ** are correct without a generator G matrix.
+      */
+
+      NTL::mat_ZZ_p c;
+
+      c.SetDims(1, static_cast<long int> (m_n));
+      c = m * m_Gcar;
+#else
+#endif
+    }
+  catch(...)
+    {
+      return false;
+    }
+
   return true;
 }
 
@@ -63,6 +110,8 @@ bool mcnoodle::prepareG(void)
   try
     {
 #ifdef MCNOODLE_ARTIFICIAL_GENERATOR
+      NTL::ident(m_G, m_k);
+      m_Ginv = m_G;
 #endif
     }
   catch(...)
@@ -77,6 +126,7 @@ bool mcnoodle::prepareGcar(void)
 {
   try
     {
+      m_Gcar = m_S * m_G * m_P;
     }
   catch(...)
     {
