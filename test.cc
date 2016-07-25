@@ -17,7 +17,8 @@ int test1(void)
   m.prepareS();
   m.prepareGcar();
 
-  char p[] = "Hello. This is a friendly test.";
+  char p[] = "The two elements are nearly always called 0 and 1, "
+    "being the additive and multiplicative identities, respectively.";
   std::stringstream cstream;
   std::stringstream pstream;
 
