@@ -96,7 +96,6 @@ bool mcnoodle::decrypt(const std::stringstream &ciphertext,
 	}
 
       plaintext << p;
-      delete []p;
     }
   catch(...)
     {
@@ -104,6 +103,7 @@ bool mcnoodle::decrypt(const std::stringstream &ciphertext,
       return false;
     }
 
+  delete []p;
   return true;
 }
 
@@ -206,8 +206,8 @@ bool mcnoodle::prepareP(void)
 
 	    if(indexes.find(j) == indexes.end())
 	      {
-		m_P[i][j] = 1;
 		indexes[j] = 0;
+		m_P[i][j] = 1;
 		break;
 	      }
 	  }
