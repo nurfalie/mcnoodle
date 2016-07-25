@@ -2,6 +2,7 @@
 #define _mcnoodle_h_
 
 #ifdef MCNOODLE_OS_UNIX
+#include <NTL/mat_GF2.h>
 #include <NTL/mat_ZZ_p.h>
 #endif
 
@@ -22,13 +23,13 @@ class mcnoodle
   bool prepareS(void);
 
  private:
-  NTL::mat_ZZ_p m_G;
-  NTL::mat_ZZ_p m_Gcar;
-  NTL::mat_ZZ_p m_Ginv;
-  NTL::mat_ZZ_p m_P;
-  NTL::mat_ZZ_p m_Pinv;
-  NTL::mat_ZZ_p m_S;
-  NTL::mat_ZZ_p m_Sinv;
+  NTL::mat_GF2 m_G;
+  NTL::mat_GF2 m_Gcar;
+  NTL::mat_GF2 m_Ginv;
+  NTL::mat_GF2 m_P;
+  NTL::mat_GF2 m_Pinv;
+  NTL::mat_GF2 m_S;
+  NTL::mat_GF2 m_Sinv;
   size_t m_k;
   size_t m_n;
   size_t m_t;

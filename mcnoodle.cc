@@ -15,9 +15,6 @@ mcnoodle::mcnoodle(const size_t k,
 		   const size_t n,
 		   const size_t t)
 {
-  NTL::ZZ p(2);
-
-  NTL::ZZ_p::init(p);
   m_k = minimumK(k);
   m_n = minimumN(n);
   m_t = minimumT(t);
@@ -59,7 +56,7 @@ bool mcnoodle::decrypt(const std::stringstream &ciphertext,
 
   try
     {
-      NTL::mat_ZZ_p c;
+      NTL::mat_GF2 c;
       std::stringstream s;
 
       s << ciphertext.rdbuf();
@@ -68,8 +65,8 @@ bool mcnoodle::decrypt(const std::stringstream &ciphertext,
       if(c.NumCols() != static_cast<long int> (m_n) && c.NumRows() != 1)
 	return false;
 
-      NTL::mat_ZZ_p ccar;
-      NTL::mat_ZZ_p m;
+      NTL::mat_GF2 ccar;
+      NTL::mat_GF2 m;
 
       ccar = c * m_Pinv;
 #ifdef MCNOODLE_ARTIFICIAL_GENERATOR
@@ -125,7 +122,7 @@ bool mcnoodle::encrypt(const char *plaintext, const size_t plaintext_size,
       ** Represent the message as a binary vector of length k.
       */
 
-      NTL::mat_ZZ_p m;
+      NTL::mat_GF2 m;
 
       m.SetDims(1, static_cast<long int> (m_k));
 
@@ -226,7 +223,7 @@ bool mcnoodle::prepareP(void)
       ** That is, PP^T = I or the inverse of P is equal to P's transpose.
       */
 
-      NTL::transpose(m_Pinv, m_P);
+      m_Pinv = NTL::transpose(m_P);
     }
   catch(...)
     {
@@ -240,27 +237,16 @@ bool mcnoodle::prepareS(void)
 {
   try
     {
-      NTL::ZZ_p determinant;
+      int long k = static_cast<long int> (m_k);
 
-    restart_label:
-
-      for(size_t i = 0; i < m_k; i++)
-	for(size_t j = 0; j < m_k; j++)
-	  if(i == j)
-	    m_S[i][j] = 1;
-	  else
-	    m_S[i][j] = NTL::RandomBnd
-	      (static_cast<int> (std::numeric_limits<uint64_t>::max() % 2));
-
-      NTL::inv(determinant, m_Sinv, m_S);
-
-      if(determinant == 0)
+      do
 	{
-	  std::cerr << "Zero determinant!\n";
-	  goto restart_label;
+	  for(long int i = 0; i < k; i++)
+	    m_S[i] = NTL::random_vec_GF2(k);
 	}
+      while(determinant(m_S) == 0);
 
-      std::string a;
+      m_Sinv = NTL::inv(m_S);
     }
   catch(...)
     {
