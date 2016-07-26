@@ -11,13 +11,21 @@ extern "C"
 
 #include "mcnoodle.h"
 
-mcnoodle::mcnoodle(const size_t k,
-		   const size_t n,
+mcnoodle::mcnoodle(const size_t m,
 		   const size_t t)
 {
-  m_k = minimumK(k);
-  m_n = minimumN(n);
+  m_d = 0;
+  m_k = 0;
+  m_m = minimumM(m);
+  m_n = 1 << m_m; // 2^m
   m_t = minimumT(t);
+
+  /*
+  ** Some calculations.
+  */
+
+  m_d = 2 * m_t + 1;
+  m_k = m_n - m_m * m_t;
 
 #ifdef MCNOODLE_ARTIFICIAL_GENERATOR
   m_n = m_k;
