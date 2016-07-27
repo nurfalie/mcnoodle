@@ -109,12 +109,22 @@ bool mcnoodle_private_key::prepareS(void)
   return true;
 }
 
+mcnoodle_public_key::mcnoodle_public_key(const size_t t)
+{
+  m_t = mcnoodle::minimumT(t);
+}
+
+mcnoodle_public_key::~mcnoodle_public_key()
+{
+}
+
 mcnoodle::mcnoodle(const size_t m,
 		   const size_t t)
 {
   m_m = minimumM(m);
   m_n = 1 << m_m; // 2^m
   m_privateKey = new mcnoodle_private_key(m, t);
+  m_publicKey = new mcnoodle_public_key(t);
   m_t = minimumM(t);
 
   /*
@@ -127,6 +137,7 @@ mcnoodle::mcnoodle(const size_t m,
 mcnoodle::~mcnoodle()
 {
   delete m_privateKey;
+  delete m_publicKey;
 }
 
 bool mcnoodle::decrypt(const std::stringstream &ciphertext,

@@ -31,6 +31,17 @@ class mcnoodle_private_key
   size_t m_t;
 };
 
+class mcnoodle_public_key
+{
+ public:
+  mcnoodle_public_key(const size_t t);
+  ~mcnoodle_public_key();
+  NTL::mat_GF2 m_Gcar;
+
+ private:
+  size_t m_t;
+};
+
 class mcnoodle
 {
  public:
@@ -61,6 +72,7 @@ class mcnoodle
 
  private:
   mcnoodle_private_key *m_privateKey;
+  mcnoodle_public_key *m_publicKey;
   size_t m_k;
   size_t m_m;
   size_t m_n;
