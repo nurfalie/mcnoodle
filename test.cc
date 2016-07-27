@@ -10,21 +10,7 @@ extern "C"
 int test1(void)
 {
   int rc = 1;
-  mcnoodle m(11, 34);
 
-  m.prepareG();
-  m.prepareP();
-  m.prepareS();
-  m.prepareGcar();
-
-  char p[] = "The two elements are nearly always called 0 and 1, "
-    "being the additive and multiplicative identities, respectively.";
-  std::stringstream cstream;
-  std::stringstream pstream;
-
-  rc &= m.encrypt(p, strlen(p), cstream);
-  rc &= m.decrypt(cstream, pstream);
-  std::cout << "After decryption: \"" << pstream.str() << "\".\n";
   return rc;
 }
 
