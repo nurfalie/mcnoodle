@@ -10,6 +10,7 @@ extern "C"
 int test1(void)
 {
   int rc = 1;
+  mcnoodle m(11, 50);
 
   return rc;
 }

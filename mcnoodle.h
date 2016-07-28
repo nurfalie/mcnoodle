@@ -4,6 +4,8 @@
 #ifdef MCNOODLE_OS_UNIX
 #include <NTL/GF2E.h>
 #include <NTL/GF2EX.h>
+#include <NTL/GF2X.h>
+#include <NTL/GF2XFactoring.h>
 #include <NTL/mat_GF2.h>
 #include <NTL/mat_ZZ_p.h>
 #include <NTL/vec_GF2E.h>
@@ -18,6 +20,7 @@ class mcnoodle_private_key
   ~mcnoodle_private_key();
   bool prepareP(void);
   bool prepareS(void);
+  NTL::GF2X m_polynomial;
   NTL::mat_GF2 m_P;
   NTL::mat_GF2 m_Pinv;
   NTL::mat_GF2 m_S;

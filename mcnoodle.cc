@@ -25,6 +25,7 @@ mcnoodle_private_key::mcnoodle_private_key(const size_t m, const size_t t)
 
   m_d = 2 * m_t + 1;
   m_k = m_n - m_m * m_t;
+  m_polynomial = NTL::BuildRandomIrred(NTL::BuildIrred_GF2X(m_m));
   prepareP();
   prepareS();
 }
@@ -37,6 +38,7 @@ bool mcnoodle_private_key::prepareP(void)
 {
   try
     {
+      long int n = static_cast<long int> (m_n);
       std::map<long int, char> indexes;
 
       /*
@@ -47,6 +49,9 @@ bool mcnoodle_private_key::prepareP(void)
       ** 0 ... 0 ... 0 ... 1 ...
       ** ...
       */
+
+      m_P.SetDims(n, n);
+      m_Pinv.SetDims(n, n);
 
       for(long int i = 0; i < m_P.NumRows(); i++)
 	do
@@ -89,6 +94,8 @@ bool mcnoodle_private_key::prepareS(void)
   try
     {
       int long k = static_cast<long int> (m_k);
+
+      m_S.SetDims(k, k);
 
       do
 	{
