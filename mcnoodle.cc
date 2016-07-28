@@ -30,8 +30,7 @@ mcnoodle_private_key::mcnoodle_private_key(const size_t m, const size_t t)
   ** An irreducible polynomial of degree m.
   */
 
-  m_polynomial = NTL::BuildRandomIrred(NTL::BuildIrred_GF2X(m_m));
-  NTL::GF2E::init(m_polynomial);
+  prepareIrreduciblePolynomial();
   prepareP();
   prepareS();
 }

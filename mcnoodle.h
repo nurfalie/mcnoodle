@@ -32,6 +32,12 @@ class mcnoodle_private_key
   size_t m_m;
   size_t m_n;
   size_t m_t;
+
+  void prepareIrreduciblePolynomial(void)
+  {
+    m_polynomial = NTL::BuildRandomIrred(NTL::BuildIrred_GF2X(m_m));
+    NTL::GF2E::init(m_polynomial);
+  }
 };
 
 class mcnoodle_public_key
