@@ -25,6 +25,11 @@ mcnoodle_private_key::mcnoodle_private_key(const size_t m, const size_t t)
 
   m_d = 2 * m_t + 1;
   m_k = m_n - m_m * m_t;
+
+  /*
+  ** An irreducible polynomial of degree m.
+  */
+
   m_polynomial = NTL::BuildRandomIrred(NTL::BuildIrred_GF2X(m_m));
   NTL::GF2E::init(m_polynomial);
   prepareP();
