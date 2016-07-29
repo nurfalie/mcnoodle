@@ -4,6 +4,7 @@
 #ifdef MCNOODLE_OS_UNIX
 #include <NTL/GF2E.h>
 #include <NTL/GF2EX.h>
+#include <NTL/GF2EXFactoring.h>
 #include <NTL/GF2X.h>
 #include <NTL/GF2XFactoring.h>
 #include <NTL/mat_GF2.h>
@@ -20,11 +21,14 @@ class mcnoodle_private_key
   ~mcnoodle_private_key();
   bool prepareP(void);
   bool prepareS(void);
+  NTL::GF2E m_A;
+  NTL::GF2EX m_g;
   NTL::GF2X m_polynomial;
   NTL::mat_GF2 m_P;
   NTL::mat_GF2 m_Pinv;
   NTL::mat_GF2 m_S;
   NTL::mat_GF2 m_Sinv;
+  NTL::vec_GF2E m_L;
 
  private:
   size_t m_d;
@@ -33,9 +37,18 @@ class mcnoodle_private_key
   size_t m_n;
   size_t m_t;
 
+  void prepareIrreducibleGenerator(void)
+  {
+    long int t = static_cast<long int> (m_t);
+
+    m_g = NTL::BuildRandomIrred(NTL::BuildIrred_GF2EX(t));
+  }
+
   void prepareIrreduciblePolynomial(void)
   {
-    m_polynomial = NTL::BuildRandomIrred(NTL::BuildIrred_GF2X(m_m));
+    long int m = static_cast<long int> (m_m);
+
+    m_polynomial = NTL::BuildRandomIrred(NTL::BuildIrred_GF2X(m));
     NTL::GF2E::init(m_polynomial);
   }
 };
