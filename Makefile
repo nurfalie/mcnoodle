@@ -1,7 +1,8 @@
 CXXFLAGS = -O3 -Wall -Werror -Wextra \
 	   -Wformat=2 -Wno-unused-function -Wno-unused-parameter \
 	   -Wpointer-arith -Wstrict-overflow=1 -mtune=native
-DEFINES	= -DMCNOODLE_OS_UNIX=1
+DEFINES	= -DMCNOODLE_ASSUME_SAFE_PARAMETERS=1 \
+	  -DMCNOODLE_OS_UNIX=1
 
 INCLUDES = -I ntl.d/unix.d/ntl-9.10.0/include
 LIBRARIES = -l:libraries.d/ntl.a

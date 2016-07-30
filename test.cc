@@ -10,8 +10,9 @@ extern "C"
 int test1(void)
 {
   int rc = 1;
-  mcnoodle m(12, 115);
+  mcnoodle m(13, 115);
 
+  m.generateKeyPair();
   return rc;
 }
 

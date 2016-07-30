@@ -8,6 +8,7 @@ extern "C"
 #include <bitset>
 #include <limits>
 #include <map>
+#include <vector>
 
 #include "mcnoodle.h"
 
@@ -33,6 +34,52 @@ mcnoodle_private_key::mcnoodle_private_key(const size_t m, const size_t t)
   prepareIrreducibleGenerator();
   prepareP();
   prepareS();
+
+  long int n = static_cast<long int> (m_n);
+  std::vector<long int> dividers;
+
+  for(long int i = 2; i < (n - 1) / 2 + 1; i++)
+    if((n - 1) % i == 0)
+      dividers.push_back(i);
+
+  for(long int i = 2; i < n; i++)
+    {
+      NTL::GF2E gf2e;
+      NTL::GF2X gf2x;
+      bool p = true;
+
+      gf2x.SetLength(static_cast<long int> (m));
+      gf2x = NTL::GF2X::zero();
+
+      for(long int j = 0; j < static_cast<long int> (m); j++)
+	/*
+	** 0 or 1
+	*/
+
+	NTL::SetCoeff(gf2x, j, (i >> j) & 1);
+
+      gf2e = NTL::to_GF2E(gf2x);
+
+      for(int long j = 0; j < static_cast<long int> (dividers.size()); j++)
+	if(NTL::power(gf2e, dividers[j]) == NTL::to_GF2E(1))
+	  {
+	    p = false;
+	    break;
+	  }
+
+      if(p)
+	{
+	  m_A = gf2e;
+	  break;
+	}
+    }
+
+  m_L.SetLength(n);
+  m_L[0] = NTL::GF2E::zero();
+  m_L[1] = m_A;
+
+  for(long int i = 2; i < m_L.length(); i++)
+    m_L[i] = m_A * m_L[i - 1];
 }
 
 mcnoodle_private_key::~mcnoodle_private_key()
@@ -244,4 +291,71 @@ bool mcnoodle::encrypt(const char *plaintext, const size_t plaintext_size,
     }
 
   return true;
+}
+
+void mcnoodle::generateKeyPair(void)
+{
+  NTL::mat_GF2 H;
+  long int m = static_cast<long int> (m_m);
+  long int n = static_cast<long int> (m_n);
+  long int t = static_cast<long int> (m_t);
+
+  H.SetDims(m * t, n);
+
+  for(long int i = 0; i < t; i++)
+    for(long int j = 0; j < n; j++)
+      {
+	NTL::GF2E gf2e = NTL::inv(NTL::eval(m_privateKey->m_g,
+					    m_privateKey->m_L[j])) *
+	  NTL::power(m_privateKey->m_L[j], i);
+	NTL::vec_GF2 v = NTL::to_vec_GF2(gf2e._GF2E__rep);
+
+	for(long int k = 0; k < v.length(); k++)
+	  H[i * m + k][j] = v[k];
+      }
+
+  NTL::gauss(H);
+
+  /*
+  ** Reduced row echelon.
+  */
+
+  long int lead = 0;
+
+  for(long int r = 0; r < H.NumRows(); r++)
+    {
+      if(H.NumCols() <= lead)
+	break;
+
+      long int i = r;
+
+      while(H[i][lead] == 0)
+	{
+	  i += 1;
+
+	  if(H.NumRows() == i)
+	    {
+	      i = r;
+	      lead += 1;
+
+	      if(H.NumCols() == lead)
+		goto done_label;
+	    }
+	}
+
+      NTL::swap(H[i], H[r]);
+
+      if(H[r][lead] != 0)
+	for(long int j = 0; j < H.NumCols(); j++)
+	  H[r][j] /= H[r][lead];
+
+      for(long int j = 0; j < H.NumRows(); j++)
+	if(j != r)
+	  H[j] = H[j] - H[j][lead] * H[r];
+
+      lead += 1;
+    }
+
+ done_label:
+  return;
 }

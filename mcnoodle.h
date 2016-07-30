@@ -92,6 +92,8 @@ class mcnoodle
 #endif
   }
 
+  void generateKeyPair(void);
+
  private:
   mcnoodle_private_key *m_privateKey;
   mcnoodle_public_key *m_publicKey;
