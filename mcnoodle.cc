@@ -225,6 +225,7 @@ bool mcnoodle::decrypt(const std::stringstream &ciphertext,
 	(std::ceil(m.NumCols() / CHAR_BIT)); /*
 					     ** m_n is not necessarily
 					     ** a multiple of CHAR_BIT.
+					     ** It may be, however.
 					     */
 
       if(plaintext_size <= 0) // Unlikely.
