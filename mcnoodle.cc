@@ -318,7 +318,7 @@ void mcnoodle::generateKeyPair(void)
   NTL::gauss(H);
 
   /*
-  ** Reduced row echelon.
+  ** Reduced row echelon form.
   */
 
   long int lead = 0;
