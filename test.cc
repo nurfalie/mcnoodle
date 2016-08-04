@@ -10,7 +10,7 @@ extern "C"
 int test1(void)
 {
   int rc = 1;
-  mcnoodle m(13, 115);
+  mcnoodle m(11, 115);
 
   m.generateKeyPair();
   return rc;

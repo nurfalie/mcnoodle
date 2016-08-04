@@ -95,6 +95,7 @@ class mcnoodle
   void generateKeyPair(void);
 
  private:
+  NTL::GF2X m_mX;
   mcnoodle_private_key *m_privateKey;
   mcnoodle_public_key *m_publicKey;
   size_t m_k;
