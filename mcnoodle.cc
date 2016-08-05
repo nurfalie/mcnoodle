@@ -26,11 +26,11 @@ mcnoodle_private_key::mcnoodle_private_key(const size_t m, const size_t t)
 
   m_d = 2 * m_t + 1;
   m_k = m_n - m_m * m_t;
-  prepareIrreduciblePolynomial(); /*
-				  ** Must be performed prior to
-				  ** prepareIrreducibleGenerator() as it
-				  ** also initializes some NTL containers.
-				  */
+  prepareMX(); /*
+	       ** Must be performed prior to
+	       ** prepareIrreducibleGenerator() as it
+	       ** also initializes some NTL containers.
+	       */
   prepareIrreducibleGenerator();
   prepareP();
   prepareS();

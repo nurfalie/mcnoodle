@@ -23,7 +23,7 @@ class mcnoodle_private_key
   bool prepareS(void);
   NTL::GF2E m_A;
   NTL::GF2EX m_g;
-  NTL::GF2X m_polynomial;
+  NTL::GF2X m_mX;
   NTL::mat_GF2 m_P;
   NTL::mat_GF2 m_Pinv;
   NTL::mat_GF2 m_S;
@@ -44,12 +44,12 @@ class mcnoodle_private_key
     m_g = NTL::BuildRandomIrred(NTL::BuildIrred_GF2EX(t));
   }
 
-  void prepareIrreduciblePolynomial(void)
+  void prepareMX(void)
   {
     long int m = static_cast<long int> (m_m);
 
-    m_polynomial = NTL::BuildRandomIrred(NTL::BuildIrred_GF2X(m));
-    NTL::GF2E::init(m_polynomial);
+    m_mX = NTL::BuildRandomIrred(NTL::BuildIrred_GF2X(m));
+    NTL::GF2E::init(m_mX);
   }
 };
 
@@ -95,7 +95,6 @@ class mcnoodle
   void generateKeyPair(void);
 
  private:
-  NTL::GF2X m_mX;
   mcnoodle_private_key *m_privateKey;
   mcnoodle_public_key *m_publicKey;
   size_t m_k;
