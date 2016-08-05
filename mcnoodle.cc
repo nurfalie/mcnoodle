@@ -284,6 +284,28 @@ bool mcnoodle::encrypt(const char *plaintext, const size_t plaintext_size,
 	    m[0][k] = b[static_cast<size_t> (j)];
 	}
 
+      /*
+      ** Create the random vector e. It will contain at most t ones.
+      */
+
+      NTL::vec_GF2 e;
+      long int c = 0;
+      long int t = static_cast<long int> (m_t);
+
+      e.SetLength(static_cast<long int> (m_n));
+
+      do
+	{
+	  long int i = NTL::RandomBnd(e.length());
+
+	  if(e(i) == 0)
+	    {
+	      c += 1;
+	      e[i] = 1;
+	    }
+	}
+      while(c < t);
+
       ciphertext << m;
     }
   catch(...)
