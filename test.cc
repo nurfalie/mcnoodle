@@ -17,7 +17,7 @@ int test1(void)
   char p[] = "The test is empty.";
   std::stringstream c;
 
-  m.encrypt(p, strlen(p), c);
+  rc = m.encrypt(p, strlen(p), c);
   return rc;
 }
 
