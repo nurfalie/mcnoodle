@@ -168,9 +168,20 @@ bool mcnoodle_private_key::prepareS(void)
   return true;
 }
 
-mcnoodle_public_key::mcnoodle_public_key(const size_t t)
+mcnoodle_public_key::mcnoodle_public_key(const size_t m,
+					 const size_t t)
 {
   m_t = mcnoodle::minimumT(t);
+
+  /*
+  ** Some calculations.
+  */
+
+  long int k = 0;
+  long int n = 1 << static_cast<long int> (m);
+
+  k = n - static_cast<long int> (m) * static_cast<long int> (m_t);
+  m_Gcar.SetDims(k, n);
 }
 
 mcnoodle_public_key::~mcnoodle_public_key()
@@ -183,7 +194,7 @@ mcnoodle::mcnoodle(const size_t m,
   m_m = minimumM(m);
   m_n = 1 << m_m; // 2^m
   m_privateKey = new mcnoodle_private_key(m, t);
-  m_publicKey = new mcnoodle_public_key(t);
+  m_publicKey = new mcnoodle_public_key(m, t);
   m_t = minimumM(t);
 
   /*
@@ -271,17 +282,17 @@ bool mcnoodle::encrypt(const char *plaintext, const size_t plaintext_size,
       ** Represent the message as a binary vector of length k.
       */
 
-      NTL::mat_GF2 m;
+      NTL::vec_GF2 m;
 
-      m.SetDims(1, static_cast<long int> (m_k));
+      m.SetLength(static_cast<long int> (m_k));
 
       for(size_t i = 0, k = 0; i < plaintext_size; i++)
 	{
 	  std::bitset<CHAR_BIT> b(plaintext[i]);
 
 	  for(long int j = 0; static_cast<size_t> (j) < b.size() &&
-		static_cast<long int> (k) < m.NumCols(); j++, k++)
-	    m[0][k] = b[static_cast<size_t> (j)];
+		static_cast<long int> (k) < m.length(); j++, k++)
+	    m[k] = b[static_cast<size_t> (j)];
 	}
 
       /*
@@ -289,8 +300,8 @@ bool mcnoodle::encrypt(const char *plaintext, const size_t plaintext_size,
       */
 
       NTL::vec_GF2 e;
-      long int c = 0;
       long int t = static_cast<long int> (m_t);
+      long int ts = 0;
 
       e.SetLength(static_cast<long int> (m_n));
 
@@ -300,13 +311,15 @@ bool mcnoodle::encrypt(const char *plaintext, const size_t plaintext_size,
 
 	  if(e(i) == 0)
 	    {
-	      c += 1;
 	      e[i] = 1;
+	      ts += 1;
 	    }
 	}
-      while(c < t);
+      while(t > ts);
 
-      ciphertext << m;
+      NTL::vec_GF2 c = m * m_publicKey->m_Gcar + e;
+
+      ciphertext << c;
     }
   catch(...)
     {
