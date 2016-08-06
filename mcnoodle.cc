@@ -395,3 +395,9 @@ void mcnoodle::generateKeyPair(void)
  done_label:
   return;
 }
+
+void mcnoodle::publicKeyParameters(size_t &t, std::stringstream &Gcar)
+{
+  Gcar << m_publicKey->m_Gcar;
+  t = m_t;
+}

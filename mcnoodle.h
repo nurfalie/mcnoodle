@@ -93,6 +93,7 @@ class mcnoodle
   }
 
   void generateKeyPair(void);
+  void publicKeyParameters(size_t &t, std::stringstream &Gcar);
 
  private:
   mcnoodle_private_key *m_privateKey;
