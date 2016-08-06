@@ -24,6 +24,7 @@ class mcnoodle_private_key
   NTL::GF2E m_A;
   NTL::GF2EX m_g;
   NTL::GF2X m_mX;
+  NTL::mat_GF2 m_G;
   NTL::mat_GF2 m_P;
   NTL::mat_GF2 m_Pinv;
   NTL::mat_GF2 m_S;
@@ -93,6 +94,9 @@ class mcnoodle
   }
 
   void generateKeyPair(void);
+  void privateKeyParameters(std::stringstream &G,
+			    std::stringstream &P,
+			    std::stringstream &S);
   void publicKeyParameters(size_t &t, std::stringstream &Gcar);
 
  private:

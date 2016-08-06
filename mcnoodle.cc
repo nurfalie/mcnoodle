@@ -396,6 +396,15 @@ void mcnoodle::generateKeyPair(void)
   return;
 }
 
+void mcnoodle::privateKeyParameters(std::stringstream &G,
+				    std::stringstream &P,
+				    std::stringstream &S)
+{
+  G << m_privateKey->m_G;
+  P << m_privateKey->m_P;
+  S << m_privateKey->m_S;
+}
+
 void mcnoodle::publicKeyParameters(size_t &t, std::stringstream &Gcar)
 {
   Gcar << m_publicKey->m_Gcar;
