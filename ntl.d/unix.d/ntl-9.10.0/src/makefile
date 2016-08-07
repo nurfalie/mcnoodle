@@ -73,7 +73,7 @@ GMP_LIBDIR=$(GMP_PREFIX)/lib
 
 GMP_OPT_INCDIR=# -I$(GMP_INCDIR) # GMPI
 GMP_OPT_LIBDIR=# -L$(GMP_LIBDIR) # GMPL
-GMP_OPT_LIB=-lgmp # GMP
+GMP_OPT_LIB=# -lgmp # GMP
 # uncomment these if using GMP
 
 
