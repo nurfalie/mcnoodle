@@ -5,7 +5,7 @@ DEFINES	= -DMCNOODLE_ASSUME_SAFE_PARAMETERS=1 \
 	  -DMCNOODLE_OS_UNIX=1
 
 INCLUDES = -I ntl.d/unix.d/ntl-9.10.0/include
-LIBRARIES = -l:libraries.d/ntl.a
+LIBRARIES = -L libraries.d -l:ntl.a
 
 OBJECT_FILES = mcnoodle.o
 
