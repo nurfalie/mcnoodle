@@ -204,6 +204,18 @@ mcnoodle::mcnoodle(const size_t m,
   m_k = m_n - m_m * m_t;
 }
 
+mcnoodle::mcnoodle(const std::stringstream &G,
+		   const std::stringstream &P,
+		   const std::stringstream &S)
+{
+  try
+    {
+    }
+  catch(...)
+    {
+    }
+}
+
 mcnoodle::~mcnoodle()
 {
   delete m_privateKey;

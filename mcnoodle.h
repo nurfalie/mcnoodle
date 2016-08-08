@@ -69,6 +69,9 @@ class mcnoodle
 {
  public:
   mcnoodle(const size_t m, const size_t t);
+  mcnoodle(const std::stringstream &G,
+	   const std::stringstream &P,
+	   const std::stringstream &S);
   ~mcnoodle();
   bool decrypt(const std::stringstream &ciphertext,
 	       std::stringstream &plaintext);
