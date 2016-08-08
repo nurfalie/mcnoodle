@@ -299,7 +299,8 @@ bool mcnoodle::decrypt(const std::stringstream &ciphertext,
   return true;
 }
 
-bool mcnoodle::encrypt(const char *plaintext, const size_t plaintext_size,
+bool mcnoodle::encrypt(const char *plaintext,
+		       const size_t plaintext_size,
 		       std::stringstream &ciphertext)
 {
   if(!m_publicKey || !plaintext || plaintext_size <= 0)
