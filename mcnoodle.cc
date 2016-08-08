@@ -193,8 +193,6 @@ mcnoodle::mcnoodle(const size_t m,
 {
   m_m = minimumM(m);
   m_n = 1 << m_m; // 2^m
-  m_privateKey = new mcnoodle_private_key(m, t);
-  m_publicKey = new mcnoodle_public_key(m, t);
   m_t = minimumM(t);
 
   /*
@@ -202,6 +200,19 @@ mcnoodle::mcnoodle(const size_t m,
   */
 
   m_k = m_n - m_m * m_t;
+
+  try
+    {
+      m_privateKey = new mcnoodle_private_key(m, t);
+      m_publicKey = new mcnoodle_public_key(m, t);
+    }
+  catch(...)
+    {
+      delete m_privateKey;
+      m_privateKey = 0;
+      delete m_publicKey;
+      m_publicKey = 0;
+    }
 }
 
 mcnoodle::mcnoodle(const std::stringstream &G,
@@ -225,6 +236,9 @@ mcnoodle::~mcnoodle()
 bool mcnoodle::decrypt(const std::stringstream &ciphertext,
 		       std::stringstream &plaintext)
 {
+  if(!m_privateKey)
+    return false;
+
   char *p = 0;
 
   try
@@ -282,7 +296,7 @@ bool mcnoodle::decrypt(const std::stringstream &ciphertext,
 bool mcnoodle::encrypt(const char *plaintext, const size_t plaintext_size,
 		       std::stringstream &ciphertext)
 {
-  if(!plaintext || plaintext_size <= 0)
+  if(!m_publicKey || !plaintext || plaintext_size <= 0)
     return false;
 
   if(CHAR_BIT * plaintext_size > static_cast<size_t> (m_k))
@@ -341,71 +355,81 @@ bool mcnoodle::encrypt(const char *plaintext, const size_t plaintext_size,
   return true;
 }
 
-void mcnoodle::generateKeyPair(void)
+bool mcnoodle::generateKeyPair(void)
 {
-  NTL::mat_GF2 H;
-  long int m = static_cast<long int> (m_m);
-  long int n = static_cast<long int> (m_n);
-  long int t = static_cast<long int> (m_t);
+  if(!m_privateKey)
+    return false;
 
-  H.SetDims(m * t, n);
+  try
+    {
+      NTL::mat_GF2 H;
+      long int m = static_cast<long int> (m_m);
+      long int n = static_cast<long int> (m_n);
+      long int t = static_cast<long int> (m_t);
 
-  for(long int i = 0; i < t; i++)
-    for(long int j = 0; j < n; j++)
-      {
-	NTL::GF2E gf2e = NTL::inv(NTL::eval(m_privateKey->m_g,
-					    m_privateKey->m_L[j])) *
-	  NTL::power(m_privateKey->m_L[j], i);
-	NTL::vec_GF2 v = NTL::to_vec_GF2(gf2e._GF2E__rep);
+      H.SetDims(m * t, n);
 
-	for(long int k = 0; k < v.length(); k++)
-	  H[i * m + k][j] = v[k];
+      for(long int i = 0; i < t; i++)
+	for(long int j = 0; j < n; j++)
+	  {
+	    NTL::GF2E gf2e = NTL::inv(NTL::eval(m_privateKey->m_g,
+						m_privateKey->m_L[j])) *
+	      NTL::power(m_privateKey->m_L[j], i);
+	    NTL::vec_GF2 v = NTL::to_vec_GF2(gf2e._GF2E__rep);
+
+	    for(long int k = 0; k < v.length(); k++)
+	      H[i * m + k][j] = v[k];
       }
 
-  NTL::gauss(H);
+      NTL::gauss(H);
 
-  /*
-  ** Reduced row echelon form.
-  */
+      /*
+      ** Reduced row echelon form.
+      */
 
-  long int lead = 0;
+      long int lead = 0;
 
-  for(long int r = 0; r < H.NumRows(); r++)
-    {
-      if(H.NumCols() <= lead)
-	break;
-
-      long int i = r;
-
-      while(H[i][lead] == 0)
+      for(long int r = 0; r < H.NumRows(); r++)
 	{
-	  i += 1;
+	  if(H.NumCols() <= lead)
+	    break;
 
-	  if(H.NumRows() == i)
+	  long int i = r;
+
+	  while(H[i][lead] == 0)
 	    {
-	      i = r;
-	      lead += 1;
+	      i += 1;
 
-	      if(H.NumCols() == lead)
-		goto done_label;
+	      if(H.NumRows() == i)
+		{
+		  i = r;
+		  lead += 1;
+
+		  if(H.NumCols() == lead)
+		    goto done_label;
+		}
 	    }
+
+	  NTL::swap(H[i], H[r]);
+
+	  if(H[r][lead] != 0)
+	    for(long int j = 0; j < H.NumCols(); j++)
+	      H[r][j] /= H[r][lead];
+
+	  for(long int j = 0; j < H.NumRows(); j++)
+	    if(j != r)
+	      H[j] = H[j] - H[j][lead] * H[r];
+
+	  lead += 1;
 	}
-
-      NTL::swap(H[i], H[r]);
-
-      if(H[r][lead] != 0)
-	for(long int j = 0; j < H.NumCols(); j++)
-	  H[r][j] /= H[r][lead];
-
-      for(long int j = 0; j < H.NumRows(); j++)
-	if(j != r)
-	  H[j] = H[j] - H[j][lead] * H[r];
-
-      lead += 1;
+    }
+  catch(...)
+    {
+      return false;
     }
 
  done_label:
-  return;
+  return true;
 }
 
 void mcnoodle::privateKeyParameters(std::stringstream &G,
@@ -419,6 +443,9 @@ void mcnoodle::privateKeyParameters(std::stringstream &G,
 
 void mcnoodle::publicKeyParameters(size_t &t, std::stringstream &Gcar)
 {
-  Gcar << m_publicKey->m_Gcar;
-  t = m_t;
+  if(m_publicKey)
+    {
+      Gcar << m_publicKey->m_Gcar;
+      t = m_t;
+    }
 }
