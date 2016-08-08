@@ -191,18 +191,12 @@ mcnoodle_public_key::~mcnoodle_public_key()
 mcnoodle::mcnoodle(const size_t m,
 		   const size_t t)
 {
-  m_m = minimumM(m);
-  m_n = 1 << m_m; // 2^m
-  m_t = minimumM(t);
-
-  /*
-  ** Some calculations.
-  */
-
-  m_k = m_n - m_m * m_t;
+  m_privateKey = 0;
+  m_publicKey = 0;
 
   try
     {
+      initializeSystemParameters(m, t);
       m_privateKey = new mcnoodle_private_key(m, t);
       m_publicKey = new mcnoodle_public_key(m, t);
     }
@@ -215,15 +209,27 @@ mcnoodle::mcnoodle(const size_t m,
     }
 }
 
-mcnoodle::mcnoodle(const std::stringstream &G,
+mcnoodle::mcnoodle(const size_t m,
+		   const size_t t,
+		   const std::stringstream &G,
 		   const std::stringstream &P,
 		   const std::stringstream &S)
 {
+  m_privateKey = 0;
+  m_publicKey = 0;
+
   try
     {
+      initializeSystemParameters(m, t);
+      m_privateKey = new mcnoodle_private_key(m, t);
+      m_publicKey = new mcnoodle_public_key(m, t);
     }
   catch(...)
     {
+      delete m_privateKey;
+      m_privateKey = 0;
+      delete m_publicKey;
+      m_publicKey = 0;
     }
 }
 

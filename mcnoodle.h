@@ -69,7 +69,9 @@ class mcnoodle
 {
  public:
   mcnoodle(const size_t m, const size_t t);
-  mcnoodle(const std::stringstream &G,
+  mcnoodle(const size_t m,
+	   const size_t t,
+	   const std::stringstream &G,
 	   const std::stringstream &P,
 	   const std::stringstream &S);
   ~mcnoodle();
@@ -95,6 +97,19 @@ class mcnoodle
 #else
     return std::max(static_cast<size_t> (38), t);
 #endif
+  }
+
+  void initializeSystemParameters(const size_t m, const size_t t)
+  {
+    m_m = minimumM(m);
+    m_n = 1 << m_m; // 2^m
+    m_t = minimumM(t);
+
+    /*
+    ** Some calculations.
+    */
+
+    m_k = m_n - m_m * m_t;
   }
 
   void privateKeyParameters(std::stringstream &G,
