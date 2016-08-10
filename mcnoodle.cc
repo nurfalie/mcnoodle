@@ -56,7 +56,7 @@ mcnoodle_private_key::mcnoodle_private_key(const size_t m, const size_t t)
 	** 0 or 1
 	*/
 
-	NTL::SetCoeff(gf2x, j, (i >> j) & 1);
+	NTL::SetCoeff(gf2x, j, NTL::RandomBnd(2));
 
       gf2e = NTL::to_GF2E(gf2x);
 
@@ -197,15 +197,9 @@ mcnoodle::mcnoodle(const size_t m,
   try
     {
       initializeSystemParameters(m, t);
-      m_privateKey = new mcnoodle_private_key(m, t);
-      m_publicKey = new mcnoodle_public_key(m, t);
     }
   catch(...)
     {
-      delete m_privateKey;
-      m_privateKey = 0;
-      delete m_publicKey;
-      m_publicKey = 0;
     }
 }
 
@@ -221,15 +215,9 @@ mcnoodle::mcnoodle(const size_t m,
   try
     {
       initializeSystemParameters(m, t);
-      m_privateKey = new mcnoodle_private_key(m, t);
-      m_publicKey = new mcnoodle_public_key(m, t);
     }
   catch(...)
     {
-      delete m_privateKey;
-      m_privateKey = 0;
-      delete m_publicKey;
-      m_publicKey = 0;
     }
 }
 
@@ -362,13 +350,13 @@ bool mcnoodle::encrypt(const char *plaintext,
   return true;
 }
 
-bool mcnoodle::generateKeyPair(void)
+bool mcnoodle::generatePrivatePublicKeys(void)
 {
-  if(!m_privateKey)
-    return false;
-
   try
     {
+      m_privateKey = new mcnoodle_private_key(m_m, m_t);
+      m_publicKey = new mcnoodle_public_key(m_m, m_t);
+
       NTL::mat_GF2 H;
       long int m = static_cast<long int> (m_m);
       long int n = static_cast<long int> (m_n);
@@ -432,6 +420,10 @@ bool mcnoodle::generateKeyPair(void)
     }
   catch(...)
     {
+      delete m_privateKey;
+      m_privateKey = 0;
+      delete m_publicKey;
+      m_publicKey = 0;
       return false;
     }
 

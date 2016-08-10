@@ -79,7 +79,7 @@ class mcnoodle
 	       std::stringstream &plaintext);
   bool encrypt(const char *plaintext, const size_t plaintext_size,
 	       std::stringstream &ciphertext);
-  bool generateKeyPair(void);
+  bool generatePrivatePublicKeys(void);
 
   static size_t minimumM(const size_t m)
   {
