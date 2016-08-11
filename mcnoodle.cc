@@ -32,6 +32,7 @@ mcnoodle_private_key::mcnoodle_private_key(const size_t m, const size_t t)
 	       ** also initializes some NTL containers.
 	       */
   prepareIrreducibleGenerator();
+  prepareG();
   prepareP();
   prepareS();
 
@@ -84,6 +85,23 @@ mcnoodle_private_key::mcnoodle_private_key(const size_t m, const size_t t)
 
 mcnoodle_private_key::~mcnoodle_private_key()
 {
+}
+
+bool mcnoodle_private_key::prepareG(void)
+{
+  try
+    {
+      long int k = static_cast<long int> (m_k);
+      long int n = static_cast<long int> (m_n);
+
+      m_G.SetDims(k, n);
+    }
+  catch(...)
+    {
+      return false;
+    }
+
+  return true;
 }
 
 bool mcnoodle_private_key::prepareP(void)
@@ -249,8 +267,8 @@ bool mcnoodle::decrypt(const std::stringstream &ciphertext,
       NTL::mat_GF2 ccar;
       NTL::mat_GF2 m;
 
-      ccar = c * m_privateKey->m_Pinv;
-      m = ccar * m_privateKey->m_Sinv;
+      ccar = c * m_privateKey->Pinv();
+      m = ccar * m_privateKey->Sinv();
 
       size_t plaintext_size = static_cast<size_t>
 	(std::ceil(m.NumCols() / CHAR_BIT)); /*
@@ -338,7 +356,7 @@ bool mcnoodle::encrypt(const char *plaintext,
 	}
       while(t > ts);
 
-      NTL::vec_GF2 c = m * m_publicKey->m_Gcar + e;
+      NTL::vec_GF2 c = m * m_publicKey->Gcar() + e;
 
       ciphertext << c;
     }
@@ -367,9 +385,9 @@ bool mcnoodle::generatePrivatePublicKeys(void)
       for(long int i = 0; i < t; i++)
 	for(long int j = 0; j < n; j++)
 	  {
-	    NTL::GF2E gf2e = NTL::inv(NTL::eval(m_privateKey->m_g,
-						m_privateKey->m_L[j])) *
-	      NTL::power(m_privateKey->m_L[j], i);
+	    NTL::GF2E gf2e = NTL::inv(NTL::eval(m_privateKey->g(),
+						m_privateKey->L()[j])) *
+	      NTL::power(m_privateKey->L()[j], i);
 	    NTL::vec_GF2 v = NTL::to_vec_GF2(gf2e._GF2E__rep);
 
 	    for(long int k = 0; k < v.length(); k++)
@@ -417,6 +435,9 @@ bool mcnoodle::generatePrivatePublicKeys(void)
 
 	  lead += 1;
 	}
+
+      m_publicKey->prepareGcar
+	(m_privateKey->G(), m_privateKey->P(), m_privateKey->S());
     }
   catch(...)
     {
@@ -435,16 +456,16 @@ void mcnoodle::privateKeyParameters(std::stringstream &G,
 				    std::stringstream &P,
 				    std::stringstream &S)
 {
-  G << m_privateKey->m_G;
-  P << m_privateKey->m_P;
-  S << m_privateKey->m_S;
+  G << m_privateKey->G();
+  P << m_privateKey->P();
+  S << m_privateKey->S();
 }
 
 void mcnoodle::publicKeyParameters(size_t &t, std::stringstream &Gcar)
 {
   if(m_publicKey)
     {
-      Gcar << m_publicKey->m_Gcar;
+      Gcar << m_publicKey->Gcar();
       t = m_t;
     }
 }

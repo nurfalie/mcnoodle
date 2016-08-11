@@ -12,12 +12,12 @@ int test1(void)
   int rc = 1;
   mcnoodle m(11, 115);
 
-  m.generatePrivatePublicKeys();
+  rc = m.generatePrivatePublicKeys();
 
   char p[] = "The test is empty.";
   std::stringstream c;
 
-  rc = m.encrypt(p, strlen(p), c);
+  rc &= m.encrypt(p, strlen(p), c);
   return rc;
 }
 

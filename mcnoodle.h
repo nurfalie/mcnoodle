@@ -19,8 +19,47 @@ class mcnoodle_private_key
  public:
   mcnoodle_private_key(const size_t m, const size_t t);
   ~mcnoodle_private_key();
+
+  NTL::GF2EX g(void) const
+  {
+    return m_g;
+  }
+
+  NTL::mat_GF2 G(void) const
+  {
+    return m_G;
+  }
+
+  NTL::mat_GF2 P(void) const
+  {
+    return m_P;
+  }
+
+  NTL::mat_GF2 Pinv(void) const
+  {
+    return m_Pinv;
+  }
+
+  NTL::mat_GF2 S(void) const
+  {
+    return m_S;
+  }
+
+  NTL::mat_GF2 Sinv(void) const
+  {
+    return m_Sinv;
+  }
+
+  NTL::vec_GF2E L(void) const
+  {
+    return m_L;
+  }
+
+  bool prepareG(void);
   bool prepareP(void);
   bool prepareS(void);
+
+ private:
   NTL::GF2E m_A;
   NTL::GF2EX m_g;
   NTL::GF2X m_mX;
@@ -30,27 +69,43 @@ class mcnoodle_private_key
   NTL::mat_GF2 m_S;
   NTL::mat_GF2 m_Sinv;
   NTL::vec_GF2E m_L;
-
- private:
   size_t m_d;
   size_t m_k;
   size_t m_m;
   size_t m_n;
   size_t m_t;
 
-  void prepareIrreducibleGenerator(void)
+  bool prepareIrreducibleGenerator(void)
   {
-    long int t = static_cast<long int> (m_t);
+    try
+      {
+	long int t = static_cast<long int> (m_t);
 
-    m_g = NTL::BuildRandomIrred(NTL::BuildIrred_GF2EX(t));
+	m_g = NTL::BuildRandomIrred(NTL::BuildIrred_GF2EX(t));
+      }
+    catch(...)
+      {
+	return false;
+      }
+
+    return true;
   }
 
-  void prepareMX(void)
+  bool prepareMX(void)
   {
-    long int m = static_cast<long int> (m_m);
+    try
+      {
+	long int m = static_cast<long int> (m_m);
 
-    m_mX = NTL::BuildRandomIrred(NTL::BuildIrred_GF2X(m));
-    NTL::GF2E::init(m_mX);
+	m_mX = NTL::BuildRandomIrred(NTL::BuildIrred_GF2X(m));
+	NTL::GF2E::init(m_mX);
+      }
+    catch(...)
+      {
+	return false;
+      }
+
+    return true;
   }
 };
 
@@ -59,9 +114,30 @@ class mcnoodle_public_key
  public:
   mcnoodle_public_key(const size_t m, const size_t t);
   ~mcnoodle_public_key();
-  NTL::mat_GF2 m_Gcar;
+
+  NTL::mat_GF2 Gcar(void) const
+  {
+    return m_Gcar;
+  }
+
+  bool prepareGcar(const NTL::mat_GF2 &G,
+		   const NTL::mat_GF2 &P,
+		   const NTL::mat_GF2 &S)
+  {
+    try
+      {
+	m_Gcar = S * G * P;
+      }
+    catch(...)
+      {
+	return false;
+      }
+
+    return true;
+  }
 
  private:
+  NTL::mat_GF2 m_Gcar;
   size_t m_t;
 };
 
