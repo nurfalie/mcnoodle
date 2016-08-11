@@ -86,7 +86,7 @@ class mcnoodle
 #ifdef MCNOODLE_ASSUME_SAFE_PARAMETERS
     return m;
 #else
-    return std::max(static_cast<size_t> (1), m);
+    return std::max(static_cast<size_t> (10), m);
 #endif
   }
 
