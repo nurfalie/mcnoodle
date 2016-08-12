@@ -54,7 +54,7 @@ mcnoodle_private_key::mcnoodle_private_key(const size_t m, const size_t t)
 
       for(long int j = 0; j < static_cast<long int> (m); j++)
 	/*
-	** 0 or 1
+	** 0 or 1, selected randomly.
 	*/
 
 	NTL::SetCoeff(gf2x, j, NTL::RandomBnd(2));
@@ -76,11 +76,14 @@ mcnoodle_private_key::mcnoodle_private_key(const size_t m, const size_t t)
     }
 
   m_L.SetLength(n);
-  m_L[0] = NTL::GF2E::zero();
-  m_L[1] = m_A;
 
-  for(long int i = 2; i < m_L.length(); i++)
-    m_L[i] = m_A * m_L[i - 1];
+  for(long int i = 0; i < m_L.length(); i++)
+    if(i == 0)
+      m_L[i] = NTL::GF2E::zero();
+    else if(i == 1)
+      m_L[i] = m_A;
+    else
+      m_L[i] = m_A * m_L[i - 1];
 }
 
 mcnoodle_private_key::~mcnoodle_private_key()
