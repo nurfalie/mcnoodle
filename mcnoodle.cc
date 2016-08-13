@@ -14,7 +14,6 @@ extern "C"
 
 mcnoodle_private_key::mcnoodle_private_key(const size_t m, const size_t t)
 {
-  m_d = 0;
   m_k = 0;
   m_m = mcnoodle::minimumM(m);
   m_n = 1 << m_m; // 2^m
@@ -24,7 +23,6 @@ mcnoodle_private_key::mcnoodle_private_key(const size_t m, const size_t t)
   ** Some calculations.
   */
 
-  m_d = 2 * m_t + 1;
   m_k = m_n - m_m * m_t;
   prepareMX(); /*
 	       ** Must be performed prior to

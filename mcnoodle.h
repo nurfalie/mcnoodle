@@ -69,7 +69,6 @@ class mcnoodle_private_key
   NTL::mat_GF2 m_S;
   NTL::mat_GF2 m_Sinv;
   NTL::vec_GF2E m_L;
-  size_t m_d;
   size_t m_k;
   size_t m_m;
   size_t m_n;
