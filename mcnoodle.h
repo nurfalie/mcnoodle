@@ -20,9 +20,9 @@ class mcnoodle_private_key
   mcnoodle_private_key(const size_t m, const size_t t);
   ~mcnoodle_private_key();
 
-  NTL::GF2EX g(void) const
+  NTL::GF2EX gZ(void) const
   {
-    return m_g;
+    return m_gZ;
   }
 
   NTL::mat_GF2 G(void) const
@@ -61,7 +61,7 @@ class mcnoodle_private_key
 
  private:
   NTL::GF2E m_A;
-  NTL::GF2EX m_g;
+  NTL::GF2EX m_gZ;
   NTL::GF2X m_mX;
   NTL::mat_GF2 m_G;
   NTL::mat_GF2 m_P;
@@ -74,13 +74,14 @@ class mcnoodle_private_key
   size_t m_n;
   size_t m_t;
 
-  bool prepareIrreducibleGenerator(void)
+  bool prepare_mX(void)
   {
     try
       {
-	long int t = static_cast<long int> (m_t);
+	long int m = static_cast<long int> (m_m);
 
-	m_g = NTL::BuildRandomIrred(NTL::BuildIrred_GF2EX(t));
+	m_mX = NTL::BuildRandomIrred(NTL::BuildIrred_GF2X(m));
+	NTL::GF2E::init(m_mX);
       }
     catch(...)
       {
@@ -90,14 +91,13 @@ class mcnoodle_private_key
     return true;
   }
 
-  bool prepareMX(void)
+  bool prepare_gZ(void)
   {
     try
       {
-	long int m = static_cast<long int> (m_m);
+	long int t = static_cast<long int> (m_t);
 
-	m_mX = NTL::BuildRandomIrred(NTL::BuildIrred_GF2X(m));
-	NTL::GF2E::init(m_mX);
+	m_gZ = NTL::BuildRandomIrred(NTL::BuildIrred_GF2EX(t));
       }
     catch(...)
       {

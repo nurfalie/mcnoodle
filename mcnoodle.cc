@@ -24,12 +24,11 @@ mcnoodle_private_key::mcnoodle_private_key(const size_t m, const size_t t)
   */
 
   m_k = m_n - m_m * m_t;
-  prepareMX(); /*
-	       ** Must be performed prior to
-	       ** prepareIrreducibleGenerator() as it
-	       ** also initializes some NTL containers.
-	       */
-  prepareIrreducibleGenerator();
+  prepare_mX(); /*
+		** Must be performed prior to prepare_gZ() as it
+		** also initializes some NTL containers.
+		*/
+  prepare_gZ();
   prepareG();
   prepareP();
   prepareS();
@@ -386,7 +385,7 @@ bool mcnoodle::generatePrivatePublicKeys(void)
       for(long int i = 0; i < t; i++)
 	for(long int j = 0; j < n; j++)
 	  {
-	    NTL::GF2E gf2e = NTL::inv(NTL::eval(m_privateKey->g(),
+	    NTL::GF2E gf2e = NTL::inv(NTL::eval(m_privateKey->gZ(),
 						m_privateKey->L()[j])) *
 	      NTL::power(m_privateKey->L()[j], i);
 	    NTL::vec_GF2 v = NTL::to_vec_GF2(gf2e._GF2E__rep);
