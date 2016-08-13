@@ -439,6 +439,46 @@ bool mcnoodle::generatePrivatePublicKeys(void)
 	  lead += 1;
 	}
 
+      /*
+      ** H = [I|R].
+      */
+
+      for(long int i = 0; i < H.NumRows(); i++)
+	if(H[i][i] == 0)
+	  {
+	    bool pivot = true;
+
+	    for(long int j = i + 1; j < H.NumCols(); j++)
+	      {
+		if(H[i][j] == 1)
+		  {
+		    for(long int k = i + 1; k < H.NumRows(); k++)
+		      {
+			if(H[k][j] == 1)
+			  {
+			    pivot = false;
+			    break;
+			  }
+		      }
+
+		    if(!pivot)
+		      break;
+
+		    for(long int k = i - 1; k >= 0; k--)
+		      if(H[k][j] == 1)
+			{
+			  pivot = false;
+			  break;
+			}
+		  }
+		else
+		  continue;
+
+		if(pivot)
+		  break;
+	      }
+	  }
+
       m_publicKey->prepareGcar
 	(m_privateKey->G(), m_privateKey->P(), m_privateKey->S());
     }
