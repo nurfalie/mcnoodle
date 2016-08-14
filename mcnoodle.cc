@@ -490,15 +490,15 @@ bool mcnoodle::generatePrivatePublicKeys(void)
 	      }
 	  }
 
-      NTL::mat_GF2 H_p;
+      NTL::mat_GF2 mat_GF2;
 
-      H_p.SetDims(H.NumRows(), H.NumCols());
+      mat_GF2.SetDims(H.NumRows(), H.NumCols());
 
       for(long int i = 0; i < H.NumRows(); i++)
 	for(long int j = 0; j < H.NumCols(); j++)
-	  H_p[i][j] = H[i][m_privateKey->swappingColumns()[j]];
+	  mat_GF2[i][j] = H[i][m_privateKey->swappingColumns()[j]];
 
-      H = H_p;
+      H = mat_GF2;
       m_publicKey->prepareGcar
 	(m_privateKey->G(), m_privateKey->P(), m_privateKey->S());
     }
