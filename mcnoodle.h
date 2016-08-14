@@ -56,7 +56,7 @@ class mcnoodle_private_key
     return m_L;
   }
 
-  bool prepareG(void);
+  bool prepareG(const NTL::mat_GF2 &R);
   bool prepareP(void);
   bool prepareS(void);
 

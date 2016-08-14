@@ -28,7 +28,6 @@ mcnoodle_private_key::mcnoodle_private_key(const size_t m, const size_t t)
 		** also initializes some NTL containers.
 		*/
   prepare_gZ();
-  prepareG();
   prepareP();
   prepareS();
   prepareSwappingColumns();
@@ -87,7 +86,7 @@ mcnoodle_private_key::~mcnoodle_private_key()
 {
 }
 
-bool mcnoodle_private_key::prepareG(void)
+bool mcnoodle_private_key::prepareG(const NTL::mat_GF2 &R)
 {
   try
     {
@@ -95,6 +94,14 @@ bool mcnoodle_private_key::prepareG(void)
       long int n = static_cast<long int> (m_n);
 
       m_G.SetDims(k, n);
+
+      for(long int i = 0; i < R.NumRows(); i++)
+	{
+	  for(long int j = 0; j < R.NumCols(); j++)
+	    m_G[i][j] = R[i][j];
+
+	  m_G[i][n - k + i] = NTL::to_GF2(1);
+	}
     }
   catch(...)
     {
@@ -564,13 +571,14 @@ bool mcnoodle::generatePrivatePublicKeys(void)
 
       NTL::mat_GF2 R;
 
-      R.SetDims(n - m * t, m * t);
+      R.SetDims(m * t, n - m * t); // R^T has n - mt rows and mt columns.
 
       for(long int i = 0; i < R.NumRows(); i++)
 	for(long int j = 0; j < R.NumCols(); j++)
 	  R[i][j] = H[i][j + (n - m * t)];
 
       R = NTL::transpose(R);
+      m_privateKey->prepareG(R);
       m_publicKey->prepareGcar
 	(m_privateKey->G(), m_privateKey->P(), m_privateKey->S());
     }
