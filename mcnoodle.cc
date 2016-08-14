@@ -186,12 +186,58 @@ bool mcnoodle_private_key::prepareS(void)
   return true;
 }
 
+bool mcnoodle_private_key::prepare_mX(void)
+{
+  try
+    {
+      long int m = static_cast<long int> (m_m);
+
+      m_mX = NTL::BuildRandomIrred(NTL::BuildIrred_GF2X(m));
+      NTL::GF2E::init(m_mX);
+    }
+  catch(...)
+    {
+      return false;
+    }
+
+  return true;
+}
+
+bool mcnoodle_private_key::prepare_gZ(void)
+{
+  try
+    {
+      long int t = static_cast<long int> (m_t);
+
+      m_gZ = NTL::BuildRandomIrred(NTL::BuildIrred_GF2EX(t));
+    }
+  catch(...)
+    {
+      return false;
+    }
+
+  return true;
+}
+
 void mcnoodle_private_key::prepareSwappingColumns(void)
 {
   long int n = static_cast<long int> (m_n);
 
   for(long int i = 0; i < n; i++)
     m_swappingColumns.push_back(i);
+}
+
+void mcnoodle_private_key::swapSwappingColumns(const long int i,
+					       const long int j)
+{
+  if(static_cast<size_t> (i) >= m_swappingColumns.size() ||
+     static_cast<size_t> (j) >= m_swappingColumns.size())
+    return;
+
+  long int t = m_swappingColumns[i];
+
+  m_swappingColumns[i] = m_swappingColumns[j];
+  m_swappingColumns[j] = t;
 }
 
 mcnoodle_public_key::mcnoodle_public_key(const size_t m,
@@ -499,6 +545,16 @@ bool mcnoodle::generatePrivatePublicKeys(void)
 	  mat_GF2[i][j] = H[i][m_privateKey->swappingColumns()[j]];
 
       H = mat_GF2;
+
+      NTL::mat_GF2 R;
+
+      R.SetDims(n - m * t, m * t);
+
+      for(long int i = 0; i < R.NumRows(); i++)
+	for(long int j = 0; j < R.NumCols(); j++)
+	  R[i][j] = H[i][j + (n - m * t)];
+
+      R = NTL::transpose(R);
       m_publicKey->prepareGcar
 	(m_privateKey->G(), m_privateKey->P(), m_privateKey->S());
     }

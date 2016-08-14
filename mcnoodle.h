@@ -66,18 +66,7 @@ class mcnoodle_private_key
   }
 
   void prepareSwappingColumns(void);
-
-  void swapSwappingColumns(const long int i, const long int j)
-  {
-    if(static_cast<size_t> (i) >= m_swappingColumns.size() ||
-       static_cast<size_t> (j) >= m_swappingColumns.size())
-      return;
-
-    long int t = m_swappingColumns[i];
-
-    m_swappingColumns[i] = m_swappingColumns[j];
-    m_swappingColumns[j] = t;
-  }
+  void swapSwappingColumns(const long int i, const long int j);
 
  private:
   NTL::GF2E m_A;
@@ -94,39 +83,8 @@ class mcnoodle_private_key
   size_t m_n;
   size_t m_t;
   std::vector<long int> m_swappingColumns;
-
-  bool prepare_mX(void)
-  {
-    try
-      {
-	long int m = static_cast<long int> (m_m);
-
-	m_mX = NTL::BuildRandomIrred(NTL::BuildIrred_GF2X(m));
-	NTL::GF2E::init(m_mX);
-      }
-    catch(...)
-      {
-	return false;
-      }
-
-    return true;
-  }
-
-  bool prepare_gZ(void)
-  {
-    try
-      {
-	long int t = static_cast<long int> (m_t);
-
-	m_gZ = NTL::BuildRandomIrred(NTL::BuildIrred_GF2EX(t));
-      }
-    catch(...)
-      {
-	return false;
-      }
-
-    return true;
-  }
+  bool prepare_mX(void);
+  bool prepare_gZ(void);
 };
 
 class mcnoodle_public_key
