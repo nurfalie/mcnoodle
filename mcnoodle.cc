@@ -8,7 +8,6 @@ extern "C"
 #include <bitset>
 #include <limits>
 #include <map>
-#include <vector>
 
 #include "mcnoodle.h"
 
@@ -32,6 +31,7 @@ mcnoodle_private_key::mcnoodle_private_key(const size_t m, const size_t t)
   prepareG();
   prepareP();
   prepareS();
+  prepareSwappingColumns();
 
   long int n = static_cast<long int> (m_n);
   std::vector<long int> dividers;
@@ -184,6 +184,14 @@ bool mcnoodle_private_key::prepareS(void)
     }
 
   return true;
+}
+
+void mcnoodle_private_key::prepareSwappingColumns(void)
+{
+  long int n = static_cast<long int> (m_n);
+
+  for(long int i = 0; i < n; i++)
+    m_swappingColumns.push_back(i);
 }
 
 mcnoodle_public_key::mcnoodle_public_key(const size_t m,
@@ -450,13 +458,11 @@ bool mcnoodle::generatePrivatePublicKeys(void)
 		if(H[i][j] == 1)
 		  {
 		    for(long int k = i + 1; k < H.NumRows(); k++)
-		      {
-			if(H[k][j] == 1)
-			  {
-			    pivot = false;
-			    break;
-			  }
-		      }
+		      if(H[k][j] == 1)
+			{
+			  pivot = false;
+			  break;
+			}
 
 		    if(!pivot)
 		      break;
@@ -472,10 +478,22 @@ bool mcnoodle::generatePrivatePublicKeys(void)
 		  continue;
 
 		if(pivot)
-		  break;
+		  {
+		    m_privateKey->swapSwappingColumns(i, j);
+		    break;
+		  }
 	      }
 	  }
 
+      NTL::mat_GF2 H_p;
+
+      H_p.SetDims(H.NumRows(), H.NumCols());
+
+      for(long int i = 0; i < H.NumRows(); i++)
+	for(long int j = 0; j < H.NumCols(); j++)
+	  H_p[i][j] = H[i][m_privateKey->swappingColumns()[j]];
+
+      H = H_p;
       m_publicKey->prepareGcar
 	(m_privateKey->G(), m_privateKey->P(), m_privateKey->S());
     }
