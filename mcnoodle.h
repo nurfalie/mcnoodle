@@ -100,19 +100,7 @@ class mcnoodle_public_key
 
   bool prepareGcar(const NTL::mat_GF2 &G,
 		   const NTL::mat_GF2 &P,
-		   const NTL::mat_GF2 &S)
-  {
-    try
-      {
-	m_Gcar = S * G * P;
-      }
-    catch(...)
-      {
-	return false;
-      }
-
-    return true;
-  }
+		   const NTL::mat_GF2 &S);
 
  private:
   NTL::mat_GF2 m_Gcar;
