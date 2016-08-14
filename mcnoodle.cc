@@ -383,6 +383,10 @@ bool mcnoodle::generatePrivatePublicKeys(void)
       m_privateKey = new mcnoodle_private_key(m_m, m_t);
       m_publicKey = new mcnoodle_public_key(m_m, m_t);
 
+      /*
+      ** Create the parity-check matrix H.
+      */
+
       NTL::mat_GF2 H;
       long int m = static_cast<long int> (m_m);
       long int n = static_cast<long int> (m_n);
@@ -445,7 +449,8 @@ bool mcnoodle::generatePrivatePublicKeys(void)
 	}
 
       /*
-      ** H = [I|R].
+      ** H = [I|R], systematic form.
+      ** More information at https://en.wikipedia.org/wiki/Generator_matrix.
       */
 
       for(long int i = 0; i < H.NumRows(); i++)
