@@ -23,10 +23,6 @@ mcnoodle_private_key::mcnoodle_private_key(const size_t m, const size_t t)
   */
 
   m_k = m_n - m_m * m_t;
-  prepare_mX(); /*
-		** Must be performed prior to prepare_gZ() as it
-		** also initializes some NTL containers.
-		*/
   prepare_gZ();
   prepareP();
   prepareS();
@@ -105,6 +101,7 @@ bool mcnoodle_private_key::prepareG(const NTL::mat_GF2 &R)
     }
   catch(...)
     {
+      NTL::clear(m_G);
       return false;
     }
 
@@ -193,28 +190,15 @@ bool mcnoodle_private_key::prepareS(void)
   return true;
 }
 
-bool mcnoodle_private_key::prepare_mX(void)
-{
-  try
-    {
-      long int m = static_cast<long int> (m_m);
-
-      m_mX = NTL::BuildRandomIrred(NTL::BuildIrred_GF2X(m));
-      NTL::GF2E::init(m_mX);
-    }
-  catch(...)
-    {
-      NTL::clear(m_mX);
-      return false;
-    }
-
-  return true;
-}
-
 bool mcnoodle_private_key::prepare_gZ(void)
 {
   try
     {
+      NTL::GF2E::init(NTL::BuildIrred_GF2X(1)); /*
+						** Initialize some NTL
+						** internal object(s).
+						*/
+
       long int t = static_cast<long int> (m_t);
 
       m_gZ = NTL::BuildRandomIrred(NTL::BuildIrred_GF2EX(t));
@@ -279,6 +263,7 @@ bool mcnoodle_public_key::prepareGcar(const NTL::mat_GF2 &G,
     }
   catch(...)
     {
+      NTL::clear(m_Gcar);
       return false;
     }
 
@@ -377,6 +362,7 @@ bool mcnoodle::decrypt(const std::stringstream &ciphertext,
   catch(...)
     {
       delete []p;
+      plaintext.clear();
       return false;
     }
 
@@ -441,6 +427,7 @@ bool mcnoodle::encrypt(const char *plaintext,
     }
   catch(...)
     {
+      ciphertext.clear();
       return false;
     }
 

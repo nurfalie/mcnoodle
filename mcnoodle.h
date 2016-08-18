@@ -71,7 +71,6 @@ class mcnoodle_private_key
  private:
   NTL::GF2E m_A;
   NTL::GF2EX m_gZ;
-  NTL::GF2X m_mX;
   NTL::mat_GF2 m_G;
   NTL::mat_GF2 m_P;
   NTL::mat_GF2 m_Pinv;
@@ -83,7 +82,6 @@ class mcnoodle_private_key
   size_t m_n;
   size_t m_t;
   std::vector<long int> m_swappingColumns;
-  bool prepare_mX(void);
   bool prepare_gZ(void);
 };
 
