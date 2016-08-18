@@ -75,7 +75,7 @@ mcnoodle_private_key::mcnoodle_private_key(const size_t m, const size_t t)
 
   for(long int i = 0; i < m_L.length(); i++)
     if(i == 0)
-      m_L[i] = NTL::GF2E::zero();
+      m_L[i] = NTL::GF2E::zero(); // Lambda 0 is always zero.
     else if(i == 1)
       m_L[i] = m_A;
     else
