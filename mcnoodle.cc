@@ -43,7 +43,7 @@ mcnoodle_private_key::mcnoodle_private_key(const size_t m, const size_t t)
     {
       NTL::GF2E gf2e;
       NTL::GF2X gf2x;
-      bool p = true;
+      bool found = true;
 
       gf2x.SetLength(static_cast<long int> (m));
       gf2x = NTL::GF2X::zero();
@@ -60,11 +60,11 @@ mcnoodle_private_key::mcnoodle_private_key(const size_t m, const size_t t)
       for(int long j = 0; j < static_cast<long int> (dividers.size()); j++)
 	if(NTL::power(gf2e, dividers[j]) == NTL::to_GF2E(1))
 	  {
-	    p = false;
+	    found = false;
 	    break;
 	  }
 
-      if(p)
+      if(found)
 	{
 	  m_A = gf2e;
 	  break;
@@ -204,6 +204,7 @@ bool mcnoodle_private_key::prepare_mX(void)
     }
   catch(...)
     {
+      NTL::clear(m_mX);
       return false;
     }
 
@@ -220,6 +221,7 @@ bool mcnoodle_private_key::prepare_gZ(void)
     }
   catch(...)
     {
+      NTL::clear(m_gZ);
       return false;
     }
 
