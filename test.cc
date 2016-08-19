@@ -14,10 +14,12 @@ int test1(void)
 
   rc = m.generatePrivatePublicKeys();
 
-  char p[] = "The test is empty.";
+  char plaintext[] = "The test is empty.";
   std::stringstream c;
+  std::stringstream p;
 
-  rc &= m.encrypt(p, strlen(p), c);
+  rc &= m.encrypt(plaintext, strlen(plaintext), c);
+  rc &= m.decrypt(c, p);
   return rc;
 }
 

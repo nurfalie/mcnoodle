@@ -71,7 +71,7 @@ mcnoodle_private_key::mcnoodle_private_key(const size_t m, const size_t t)
 
   for(long int i = 0; i < m_L.length(); i++)
     if(i == 0)
-      m_L[i] = NTL::GF2E::zero(); // Lambda 0 is always zero.
+      m_L[i] = NTL::GF2E::zero(); // Lambda-0 is always zero.
     else if(i == 1)
       m_L[i] = m_A;
     else
@@ -319,44 +319,27 @@ bool mcnoodle::decrypt(const std::stringstream &ciphertext,
 
   try
     {
-      NTL::mat_GF2 c;
+      NTL::vec_GF2 c;
       std::stringstream s;
 
       s << ciphertext.rdbuf();
       s >> c;
 
-      if(c.NumCols() != static_cast<long int> (m_n) && c.NumRows() != 1)
+      if(c.length() != static_cast<long int> (m_n))
 	return false;
 
-      NTL::mat_GF2 ccar;
-      NTL::mat_GF2 m;
-
-      ccar = c * m_privateKey->Pinv();
-      m = ccar * m_privateKey->Sinv();
-
       size_t plaintext_size = static_cast<size_t>
-	(std::ceil(m.NumCols() / CHAR_BIT)); /*
-					     ** m_n is not necessarily
-					     ** a multiple of CHAR_BIT.
-					     ** It may be, however.
-					     */
+	(std::ceil(m_n / CHAR_BIT)); /*
+				     ** m_n is not necessarily
+				     ** a multiple of CHAR_BIT.
+				     ** It may be, however.
+				     */
 
       if(plaintext_size <= 0) // Unlikely.
 	return false;
 
       p = new char[plaintext_size];
       memset(p, 0, plaintext_size);
-
-      for(long int i = 0, k = 0; i < m.NumCols(); k++)
-	{
-	  std::bitset<CHAR_BIT> b;
-
-	  for(long int j = 0; j < CHAR_BIT && i < m.NumCols(); i++, j++)
-	    b[static_cast<size_t> (j)] = m[0][i] == 0 ? 0 : 1;
-
-	  p[k] = static_cast<char> (b.to_ulong());
-	}
-
       plaintext << p;
     }
   catch(...)
