@@ -328,9 +328,16 @@ bool mcnoodle::decrypt(const std::stringstream &ciphertext,
       if(c.length() != static_cast<long int> (m_n))
 	return false;
 
+      NTL::vec_GF2 ccar = c * m_privateKey->Pinv();
+      NTL::vec_GF2 m;
+      NTL::vec_GF2 mcar;
+
+      mcar.SetLength(static_cast<long int> (m_k));
+      m = mcar * m_privateKey->Sinv();
+
       size_t plaintext_size = static_cast<size_t>
-	(std::ceil(m_n / CHAR_BIT)); /*
-				     ** m_n is not necessarily
+	(std::ceil(m_k / CHAR_BIT)); /*
+				     ** m_k is not necessarily
 				     ** a multiple of CHAR_BIT.
 				     ** It may be, however.
 				     */
@@ -340,6 +347,17 @@ bool mcnoodle::decrypt(const std::stringstream &ciphertext,
 
       p = new char[plaintext_size];
       memset(p, 0, plaintext_size);
+
+      for(long int i = 0, k = 0; i < m.length(); k++)
+	{
+	  std::bitset<CHAR_BIT> b;
+
+	  for(long int j = 0; j < CHAR_BIT && i < m.length(); i++, j++)
+	    b[static_cast<size_t> (j)] = m[i] == 0 ? 0 : 1;
+
+	  p[k] = static_cast<char> (b.to_ulong());
+	}
+
       plaintext << p;
     }
   catch(...)
