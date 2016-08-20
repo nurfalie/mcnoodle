@@ -101,6 +101,7 @@ class mcnoodle_public_key
 		   const NTL::mat_GF2 &S);
 
  private:
+  NTL::GF2EX m_Sez; // The syndrome polynomial.
   NTL::mat_GF2 m_Gcar;
   size_t m_t;
 };
