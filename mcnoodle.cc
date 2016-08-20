@@ -73,7 +73,7 @@ mcnoodle_private_key::mcnoodle_private_key(const size_t m, const size_t t)
     if(i == 0)
       m_L[i] = NTL::GF2E::zero(); // Lambda-0 is always zero.
     else if(i == 1)
-      m_L[i] = m_A;
+      m_L[i] = m_A; // Discovered generator.
     else
       m_L[i] = m_A * m_L[i - 1];
 }
