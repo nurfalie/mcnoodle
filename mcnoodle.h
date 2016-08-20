@@ -58,6 +58,7 @@ class mcnoodle_private_key
 
   bool prepareG(const NTL::mat_GF2 &R);
   bool prepareP(void);
+  bool preparePreSynTab(void);
   bool prepareS(void);
 
   std::vector<long int> swappingColumns(void) const
@@ -70,6 +71,8 @@ class mcnoodle_private_key
 
  private:
   NTL::GF2E m_A;
+  NTL::GF2EX m_Sez; // The syndrome polynomial.
+  NTL::GF2EX m_X;
   NTL::GF2EX m_gZ;
   NTL::mat_GF2 m_G;
   NTL::mat_GF2 m_P;
@@ -81,6 +84,7 @@ class mcnoodle_private_key
   size_t m_m;
   size_t m_n;
   size_t m_t;
+  std::vector<NTL::GF2EX> m_preSynTab;
   std::vector<long int> m_swappingColumns;
   bool prepare_gZ(void);
 };
@@ -101,7 +105,6 @@ class mcnoodle_public_key
 		   const NTL::mat_GF2 &S);
 
  private:
-  NTL::GF2EX m_Sez; // The syndrome polynomial.
   NTL::mat_GF2 m_Gcar;
   size_t m_t;
 };

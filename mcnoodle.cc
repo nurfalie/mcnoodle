@@ -163,6 +163,30 @@ bool mcnoodle_private_key::prepareP(void)
   return true;
 }
 
+bool mcnoodle_private_key::preparePreSynTab(void)
+{
+  try
+    {
+      long int n = static_cast<long int> (m_n);
+
+      if(m_L.length() != n)
+	return false;
+
+      NTL::SetCoeff(m_X, 1, 1);
+      m_preSynTab.clear();
+
+      for(int i = 0; i < n; i++)
+	m_preSynTab.push_back(NTL::InvMod(m_X - m_L[i], m_gZ));
+    }
+  catch(...)
+    {
+      m_preSynTab.clear();
+      return false;
+    }
+
+  return true;
+}
+
 bool mcnoodle_private_key::prepareS(void)
 {
   try
@@ -214,6 +238,8 @@ bool mcnoodle_private_key::prepare_gZ(void)
 
 void mcnoodle_private_key::prepareSwappingColumns(void)
 {
+  m_swappingColumns.clear();
+
   long int n = static_cast<long int> (m_n);
 
   for(long int i = 0; i < n; i++)
