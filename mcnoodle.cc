@@ -176,7 +176,7 @@ bool mcnoodle_private_key::prepareS(void)
 	  for(long int i = 0; i < k; i++)
 	    m_S[i] = NTL::random_vec_GF2(k);
 	}
-      while(determinant(m_S) == 0);
+      while(NTL::determinant(m_S) == 0);
 
       m_Sinv = NTL::inv(m_S);
     }
