@@ -23,9 +23,10 @@ mcnoodle_private_key::mcnoodle_private_key(const size_t m, const size_t t)
   */
 
   m_k = m_n - m_m * m_t;
-  prepare_gZ();
-  prepareP();
-  prepareS();
+  m_ok = true;
+  m_ok &= prepare_gZ();
+  m_ok &= prepareP();
+  m_ok &= prepareS();
   prepareSwappingColumns();
 
   long int n = static_cast<long int> (m_n);
@@ -76,6 +77,8 @@ mcnoodle_private_key::mcnoodle_private_key(const size_t m, const size_t t)
       m_L[i] = m_A; // Discovered generator.
     else
       m_L[i] = m_A * m_L[i - 1];
+
+  m_ok &= preparePreSynTab();
 }
 
 mcnoodle_private_key::~mcnoodle_private_key()
@@ -338,7 +341,7 @@ mcnoodle::~mcnoodle()
 bool mcnoodle::decrypt(const std::stringstream &ciphertext,
 		       std::stringstream &plaintext)
 {
-  if(!m_privateKey)
+  if(!m_privateKey || !m_privateKey->ok())
     return false;
 
   char *p = 0;

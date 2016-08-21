@@ -56,6 +56,11 @@ class mcnoodle_private_key
     return m_L;
   }
 
+  bool ok(void) const
+  {
+    return m_ok;
+  }
+
   bool prepareG(const NTL::mat_GF2 &R);
   bool prepareP(void);
   bool preparePreSynTab(void);
@@ -80,6 +85,7 @@ class mcnoodle_private_key
   NTL::mat_GF2 m_S;
   NTL::mat_GF2 m_Sinv;
   NTL::vec_GF2E m_L;
+  bool m_ok;
   size_t m_k;
   size_t m_m;
   size_t m_n;
