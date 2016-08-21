@@ -474,7 +474,7 @@ bool mcnoodle::encrypt(const char *plaintext,
 	{
 	  long int i = NTL::RandomBnd(e.length());
 
-	  if(e(i) == 0)
+	  if(e[i] == 0)
 	    {
 	      e[i] = 1;
 	      ts += 1;
