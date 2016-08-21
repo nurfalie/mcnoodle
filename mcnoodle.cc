@@ -24,9 +24,9 @@ mcnoodle_private_key::mcnoodle_private_key(const size_t m, const size_t t)
 
   m_k = m_n - m_m * m_t;
   m_ok = true;
-  m_ok &= prepare_gZ();
-  m_ok &= prepareP();
-  m_ok &= prepareS();
+  prepare_gZ();
+  prepareP();
+  prepareS();
   prepareSwappingColumns();
 
   long int n = static_cast<long int> (m_n);
@@ -78,7 +78,7 @@ mcnoodle_private_key::mcnoodle_private_key(const size_t m, const size_t t)
     else
       m_L[i] = m_A * m_L[i - 1];
 
-  m_ok &= preparePreSynTab();
+  preparePreSynTab();
 }
 
 mcnoodle_private_key::~mcnoodle_private_key()
@@ -105,9 +105,11 @@ bool mcnoodle_private_key::prepareG(const NTL::mat_GF2 &R)
   catch(...)
     {
       NTL::clear(m_G);
+      m_ok = false;
       return false;
     }
 
+  m_ok &= true;
   return true;
 }
 
@@ -160,9 +162,11 @@ bool mcnoodle_private_key::prepareP(void)
     {
       NTL::clear(m_P);
       NTL::clear(m_Pinv);
+      m_ok = false;
       return false;
     }
 
+  m_ok &= true;
   return true;
 }
 
@@ -173,7 +177,10 @@ bool mcnoodle_private_key::preparePreSynTab(void)
       long int n = static_cast<long int> (m_n);
 
       if(m_L.length() != n)
-	return false;
+	{
+	  m_ok = false;
+	  return false;
+	}
 
       NTL::SetCoeff(m_X, 1, 1);
       m_preSynTab.clear();
@@ -183,10 +190,12 @@ bool mcnoodle_private_key::preparePreSynTab(void)
     }
   catch(...)
     {
+      m_ok = false;
       m_preSynTab.clear();
       return false;
     }
 
+  m_ok &= true;
   return true;
 }
 
@@ -211,9 +220,11 @@ bool mcnoodle_private_key::prepareS(void)
     {
       NTL::clear(m_S);
       NTL::clear(m_Sinv);
+      m_ok = false;
       return false;
     }
 
+  m_ok &= true;
   return true;
 }
 
@@ -233,9 +244,11 @@ bool mcnoodle_private_key::prepare_gZ(void)
   catch(...)
     {
       NTL::clear(m_gZ);
+      m_ok = false;
       return false;
     }
 
+  m_ok &= true;
   return true;
 }
 
@@ -254,7 +267,10 @@ void mcnoodle_private_key::swapSwappingColumns(const long int i,
 {
   if(static_cast<size_t> (i) >= m_swappingColumns.size() ||
      static_cast<size_t> (j) >= m_swappingColumns.size())
-    return;
+    {
+      m_ok = false;
+      return;
+    }
 
   long int t = m_swappingColumns[i];
 
@@ -265,6 +281,7 @@ void mcnoodle_private_key::swapSwappingColumns(const long int i,
 mcnoodle_public_key::mcnoodle_public_key(const size_t m,
 					 const size_t t)
 {
+  m_ok = true;
   m_t = mcnoodle::minimumT(t);
 
   /*
@@ -293,9 +310,11 @@ bool mcnoodle_public_key::prepareGcar(const NTL::mat_GF2 &G,
   catch(...)
     {
       NTL::clear(m_Gcar);
+      m_ok = false;
       return false;
     }
 
+  m_ok &= true;
   return true;
 }
 

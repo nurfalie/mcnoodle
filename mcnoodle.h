@@ -62,9 +62,6 @@ class mcnoodle_private_key
   }
 
   bool prepareG(const NTL::mat_GF2 &R);
-  bool prepareP(void);
-  bool preparePreSynTab(void);
-  bool prepareS(void);
 
   std::vector<long int> swappingColumns(void) const
   {
@@ -92,6 +89,9 @@ class mcnoodle_private_key
   size_t m_t;
   std::vector<NTL::GF2EX> m_preSynTab;
   std::vector<long int> m_swappingColumns;
+  bool prepareP(void);
+  bool preparePreSynTab(void);
+  bool prepareS(void);
   bool prepare_gZ(void);
 };
 
@@ -106,12 +106,18 @@ class mcnoodle_public_key
     return m_Gcar;
   }
 
+  bool ok(void) const
+  {
+    return m_ok;
+  }
+
   bool prepareGcar(const NTL::mat_GF2 &G,
 		   const NTL::mat_GF2 &P,
 		   const NTL::mat_GF2 &S);
 
  private:
   NTL::mat_GF2 m_Gcar;
+  bool m_ok;
   size_t m_t;
 };
 
