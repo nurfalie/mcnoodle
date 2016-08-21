@@ -516,7 +516,7 @@ bool mcnoodle::generatePrivatePublicKeys(void)
 
       NTL::mat_GF2 H;
       long int m = static_cast<long int> (m_m);
-      long int n = static_cast<long int> (m_n);
+      long int n = m_privateKey->L().length();
       long int t = static_cast<long int> (m_t);
 
       H.SetDims(m * t, n);
@@ -657,6 +657,9 @@ void mcnoodle::privateKeyParameters(std::stringstream &G,
 				    std::stringstream &P,
 				    std::stringstream &S)
 {
+  if(!m_privateKey)
+    return;
+
   G << m_privateKey->G();
   P << m_privateKey->P();
   S << m_privateKey->S();
