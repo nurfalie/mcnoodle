@@ -174,6 +174,12 @@ bool mcnoodle_private_key::preparePreSynTab(void)
 {
   try
     {
+      if(!NTL::deg(m_gZ))
+	{
+	  m_ok = false;
+	  return false;
+	}
+
       long int n = static_cast<long int> (m_n);
 
       if(m_L.length() != n)
@@ -182,6 +188,8 @@ bool mcnoodle_private_key::preparePreSynTab(void)
 	  return false;
 	}
 
+      m_X.SetLength(2);
+      NTL::SetCoeff(m_X, 0, 0);
       NTL::SetCoeff(m_X, 1, 1);
       m_preSynTab.clear();
 
@@ -237,9 +245,8 @@ bool mcnoodle_private_key::prepare_gZ(void)
 						** internal object(s).
 						*/
 
-      long int t = static_cast<long int> (m_t);
-
-      m_gZ = NTL::BuildRandomIrred(NTL::BuildIrred_GF2EX(t));
+      m_gZ = NTL::BuildRandomIrred
+	(NTL::BuildIrred_GF2EX(static_cast<long int> (m_t)));
     }
   catch(...)
     {
@@ -423,7 +430,7 @@ bool mcnoodle::encrypt(const char *plaintext,
 		       const size_t plaintext_size,
 		       std::stringstream &ciphertext)
 {
-  if(!m_publicKey || !plaintext || plaintext_size <= 0)
+  if(!m_publicKey || !m_publicKey->ok() || !plaintext || plaintext_size <= 0)
     return false;
 
   if(CHAR_BIT * plaintext_size > static_cast<size_t> (m_k))
@@ -489,6 +496,9 @@ bool mcnoodle::generatePrivatePublicKeys(void)
     {
       m_privateKey = new mcnoodle_private_key(m_m, m_t);
       m_publicKey = new mcnoodle_public_key(m_m, m_t);
+
+      if(!NTL::deg(m_privateKey->gZ()))
+	return false;
 
       /*
       ** Create the parity-check matrix H.
