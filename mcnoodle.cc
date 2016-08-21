@@ -16,6 +16,7 @@ mcnoodle_private_key::mcnoodle_private_key(const size_t m, const size_t t)
   m_k = 0;
   m_m = mcnoodle::minimumM(m);
   m_n = 1 << m_m; // 2^m
+  m_ok = true;
   m_t = mcnoodle::minimumT(t);
 
   /*
@@ -23,7 +24,11 @@ mcnoodle_private_key::mcnoodle_private_key(const size_t m, const size_t t)
   */
 
   m_k = m_n - m_m * m_t;
-  m_ok = true;
+
+  /*
+  ** Prepare important containers.
+  */
+
   prepare_gZ();
   prepareP();
   prepareS();
@@ -52,7 +57,7 @@ mcnoodle_private_key::mcnoodle_private_key(const size_t m, const size_t t)
 
 	NTL::SetCoeff(gf2x, j, NTL::RandomBnd(2));
 
-      gf2e = NTL::to_GF2E(gf2x);
+      gf2e = m_A = NTL::to_GF2E(gf2x);
 
       for(int long j = 0; j < static_cast<long int> (dividers.size()); j++)
 	if(NTL::power(gf2e, dividers[j]) == NTL::to_GF2E(1))
@@ -94,6 +99,10 @@ bool mcnoodle_private_key::prepareG(const NTL::mat_GF2 &R)
 
       m_G.SetDims(k, n);
 
+      for(long int i = 0; i < m_G.NumRows(); i++)
+	for(long int j = 0; j < m_G.NumCols(); j++)
+	  m_G[i][j] = NTL::to_GF2(1);
+
       for(long int i = 0; i < R.NumRows(); i++)
 	{
 	  for(long int j = 0; j < R.NumCols(); j++)
@@ -130,7 +139,6 @@ bool mcnoodle_private_key::prepareP(void)
       */
 
       m_P.SetDims(n, n);
-      m_Pinv.SetDims(n, n);
 
       for(long int i = 0; i < m_P.NumRows(); i++)
 	do
@@ -180,9 +188,7 @@ bool mcnoodle_private_key::preparePreSynTab(void)
 	  return false;
 	}
 
-      long int n = static_cast<long int> (m_n);
-
-      if(m_L.length() != n)
+      if(m_L.length() != static_cast<long int> (m_n))
 	{
 	  m_ok = false;
 	  return false;
@@ -193,7 +199,7 @@ bool mcnoodle_private_key::preparePreSynTab(void)
       NTL::SetCoeff(m_X, 1, 1);
       m_preSynTab.clear();
 
-      for(int i = 0; i < n; i++)
+      for(long int i = 0; i < m_L.length(); i++)
 	m_preSynTab.push_back(NTL::InvMod(m_X - m_L[i], m_gZ));
     }
   catch(...)
@@ -244,7 +250,6 @@ bool mcnoodle_private_key::prepare_gZ(void)
 						** Initialize some NTL
 						** internal object(s).
 						*/
-
       m_gZ = NTL::BuildRandomIrred
 	(NTL::BuildIrred_GF2EX(static_cast<long int> (m_t)));
     }
@@ -492,6 +497,11 @@ bool mcnoodle::encrypt(const char *plaintext,
 
 bool mcnoodle::generatePrivatePublicKeys(void)
 {
+  delete m_privateKey;
+  m_privateKey = 0;
+  delete m_publicKey;
+  m_publicKey = 0;
+
   try
     {
       m_privateKey = new mcnoodle_private_key(m_m, m_t);
