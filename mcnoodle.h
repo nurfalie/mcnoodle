@@ -170,7 +170,9 @@ class mcnoodle
 
   void privateKeyParameters(std::stringstream &G,
 			    std::stringstream &P,
-			    std::stringstream &S);
+			    std::stringstream &Pinv,
+			    std::stringstream &S,
+			    std::stringstream &Sinv);
   void publicKeyParameters(size_t &t, std::stringstream &Gcar);
 
  private:

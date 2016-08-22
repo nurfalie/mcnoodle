@@ -655,14 +655,18 @@ bool mcnoodle::generatePrivatePublicKeys(void)
 
 void mcnoodle::privateKeyParameters(std::stringstream &G,
 				    std::stringstream &P,
-				    std::stringstream &S)
+				    std::stringstream &Pinv,
+				    std::stringstream &S,
+				    std::stringstream &Sinv)
 {
   if(!m_privateKey)
     return;
 
   G << m_privateKey->G();
   P << m_privateKey->P();
+  Pinv << m_privateKey->Pinv();
   S << m_privateKey->S();
+  Sinv << m_privateKey->Sinv();
 }
 
 void mcnoodle::publicKeyParameters(size_t &t, std::stringstream &Gcar)
