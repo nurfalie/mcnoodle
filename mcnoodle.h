@@ -21,6 +21,11 @@ class mcnoodle_private_key
   mcnoodle_private_key(const size_t m, const size_t t);
   ~mcnoodle_private_key();
 
+  NTL::GF2EX X(void) const
+  {
+    return m_X;
+  }
+
   NTL::GF2EX gZ(void) const
   {
     return m_gZ;

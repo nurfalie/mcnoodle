@@ -405,6 +405,16 @@ bool mcnoodle::decrypt(const std::stringstream &ciphertext,
 	if(ccar[i] != 0)
 	  syndrome += m_privateKey->preSynTab()[i];
 
+      NTL::vec_GF2 e;
+
+      e.SetLength(n);
+
+      if(!NTL::IsZero(syndrome))
+	{
+	  NTL::GF2EX T = NTL::InvMod(syndrome, m_privateKey->gZ()) +
+	    m_privateKey->X();
+	}
+
       NTL::vec_GF2 m;
       NTL::vec_GF2 mcar;
 
