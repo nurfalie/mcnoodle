@@ -413,6 +413,16 @@ bool mcnoodle::decrypt(const std::stringstream &ciphertext,
 	{
 	  NTL::GF2EX T = NTL::InvMod(syndrome, m_privateKey->gZ()) +
 	    m_privateKey->X();
+	  NTL::GF2EX sigma;
+	  NTL::GF2EX tau;
+	  NTL::ZZ exponent = NTL::power
+	    (NTL::power2_ZZ(static_cast<long int> (m_t)),
+	     static_cast<long int> (m_m)) / 2;
+
+	  if(NTL::IsZero(T))
+	    sigma = m_privateKey->X();
+	  else
+	    tau = NTL::PowerMod(T, exponent, m_privateKey->gZ());
 	}
 
       NTL::vec_GF2 m;
