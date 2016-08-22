@@ -63,6 +63,11 @@ class mcnoodle_private_key
 
   bool prepareG(const NTL::mat_GF2 &R);
 
+  std::vector<NTL::GF2EX> preSynTab(void) const
+  {
+    return m_preSynTab;
+  }
+
   std::vector<long int> swappingColumns(void) const
   {
     return m_swappingColumns;

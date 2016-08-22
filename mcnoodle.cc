@@ -389,6 +389,22 @@ bool mcnoodle::decrypt(const std::stringstream &ciphertext,
 	return false;
 
       NTL::vec_GF2 ccar = c * m_privateKey->Pinv();
+
+      if(ccar.length() != static_cast<long int> (m_n) ||
+	 m_n != m_privateKey->preSynTab().size())
+	return false;
+
+      /*
+      ** Patterson.
+      */
+
+      NTL::GF2EX syndrome = NTL::GF2EX::zero();
+      long int n = static_cast<long int> (m_n);
+
+      for(long int i = 0; i < n; i++)
+	if(ccar[i] != 0)
+	  syndrome += m_privateKey->preSynTab()[i];
+
       NTL::vec_GF2 m;
       NTL::vec_GF2 mcar;
 
