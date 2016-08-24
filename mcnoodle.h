@@ -1,6 +1,12 @@
 #ifndef _mcnoodle_h_
 #define _mcnoodle_h_
 
+extern "C"
+{
+#include <limits.h>
+#include <string.h>
+}
+
 #ifdef MCNOODLE_OS_UNIX
 #include <NTL/GF2E.h>
 #include <NTL/GF2EX.h>
@@ -12,6 +18,7 @@
 #include <NTL/vec_GF2E.h>
 #endif
 
+#include <limits>
 #include <sstream>
 #include <vector>
 
@@ -78,12 +85,10 @@ class mcnoodle_private_key
     return m_swappingColumns;
   }
 
-  void prepareSwappingColumns(void);
   void swapSwappingColumns(const long int i, const long int j);
 
  private:
   NTL::GF2E m_A;
-  NTL::GF2EX m_Sez; // The syndrome polynomial.
   NTL::GF2EX m_X;
   NTL::GF2EX m_gZ;
   NTL::mat_GF2 m_G;
@@ -103,6 +108,7 @@ class mcnoodle_private_key
   bool preparePreSynTab(void);
   bool prepareS(void);
   bool prepare_gZ(void);
+  void prepareSwappingColumns(void);
 };
 
 class mcnoodle_public_key

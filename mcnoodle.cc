@@ -1,12 +1,4 @@
-extern "C"
-{
-#include <inttypes.h>
-#include <limits.h>
-#include <string.h>
-}
-
 #include <bitset>
-#include <limits>
 #include <map>
 
 #include "mcnoodle.h"
@@ -75,7 +67,7 @@ mcnoodle_private_key::mcnoodle_private_key(const size_t m, const size_t t)
 
   m_L.SetLength(n);
 
-  for(long int i = 0; i < m_L.length(); i++)
+  for(long int i = 0; i < n; i++)
     if(i == 0)
       m_L[i] = NTL::GF2E::zero(); // Lambda-0 is always zero.
     else if(i == 1)
@@ -94,22 +86,34 @@ bool mcnoodle_private_key::prepareG(const NTL::mat_GF2 &R)
 {
   try
     {
+      if(m_swappingColumns.size() != static_cast<size_t> (m_n))
+	{
+	  m_ok = false;
+	  return false;
+	}
+
       long int k = static_cast<long int> (m_k);
       long int n = static_cast<long int> (m_n);
 
       m_G.SetDims(k, n);
 
-      for(long int i = 0; i < m_G.NumRows(); i++)
-	for(long int j = 0; j < m_G.NumCols(); j++)
-	  m_G[i][j] = NTL::to_GF2(1);
-
-      for(long int i = 0; i < R.NumRows(); i++)
+      for(long int i = 0; i < k; i++)
 	{
-	  for(long int j = 0; j < R.NumCols(); j++)
+	  for(long int j = 0; j < n - k; j++)
 	    m_G[i][j] = R[i][j];
 
 	  m_G[i][n - k + i] = NTL::to_GF2(1);
 	}
+
+      NTL::mat_GF2 mat_GF2;
+
+      mat_GF2.SetDims(k, n);
+
+      for(long int i = 0; i < n; i++)
+	for(long int j = 0; j < k; j++)
+	  mat_GF2[j][m_swappingColumns[i]] = m_G[j][i];
+
+      m_G = mat_GF2;
     }
   catch(...)
     {
@@ -188,7 +192,9 @@ bool mcnoodle_private_key::preparePreSynTab(void)
 	  return false;
 	}
 
-      if(m_L.length() != static_cast<long int> (m_n))
+      long int n = static_cast<long int> (m_n);
+
+      if(m_L.length() != n)
 	{
 	  m_ok = false;
 	  return false;
@@ -199,7 +205,7 @@ bool mcnoodle_private_key::preparePreSynTab(void)
       NTL::SetCoeff(m_X, 1, 1);
       m_preSynTab.clear();
 
-      for(long int i = 0; i < m_L.length(); i++)
+      for(long int i = 0; i < n; i++)
 	m_preSynTab.push_back(NTL::InvMod(m_X - m_L[i], m_gZ));
     }
   catch(...)
@@ -246,10 +252,13 @@ bool mcnoodle_private_key::prepare_gZ(void)
 {
   try
     {
-      NTL::GF2E::init(NTL::BuildIrred_GF2X(1)); /*
-						** Initialize some NTL
-						** internal object(s).
-						*/
+      NTL::GF2E::init
+	(NTL::BuildIrred_GF2X(static_cast<long int> (m_m))); /*
+							     ** Initialize
+							     ** some NTL
+							     ** internal
+							     ** object(s).
+							     */
       m_gZ = NTL::BuildRandomIrred
 	(NTL::BuildIrred_GF2EX(static_cast<long int> (m_t)));
     }
@@ -405,6 +414,7 @@ bool mcnoodle::decrypt(const std::stringstream &ciphertext,
 	if(ccar[i] != 0)
 	  syndrome += m_privateKey->preSynTab()[i];
 
+      NTL::GF2EX sigma = NTL::GF2EX::zero();
       NTL::vec_GF2 e;
 
       e.SetLength(n);
@@ -413,8 +423,10 @@ bool mcnoodle::decrypt(const std::stringstream &ciphertext,
 	{
 	  NTL::GF2EX T = NTL::InvMod(syndrome, m_privateKey->gZ()) +
 	    m_privateKey->X();
-	  NTL::GF2EX sigma;
-	  NTL::GF2EX tau;
+	  NTL::GF2EX alpha = NTL::GF2EX::zero();
+	  NTL::GF2EX beta = NTL::GF2EX::zero();
+	  NTL::GF2EX gamma = NTL::GF2EX::zero();
+	  NTL::GF2EX tau = NTL::GF2EX::zero();
 	  NTL::ZZ exponent = NTL::power
 	    (NTL::power2_ZZ(static_cast<long int> (m_t)),
 	     static_cast<long int> (m_m)) / 2;
@@ -422,13 +434,104 @@ bool mcnoodle::decrypt(const std::stringstream &ciphertext,
 	  if(NTL::IsZero(T))
 	    sigma = m_privateKey->X();
 	  else
-	    tau = NTL::PowerMod(T, exponent, m_privateKey->gZ());
+	    {
+	      tau = NTL::PowerMod(T, exponent, m_privateKey->gZ());
+
+	      NTL::GF2E c1;
+	      NTL::GF2E c2;
+	      NTL::GF2E c3;
+	      NTL::GF2E c4;
+	      NTL::GF2EX GF2EX = NTL::GF2EX::zero();
+	      NTL::GF2EX r0 = m_privateKey->gZ();
+	      NTL::GF2EX r1 = tau;
+	      NTL::GF2EX u0 = NTL::GF2EX::zero();
+	      NTL::GF2EX u1;
+	      long int dr = NTL::deg(r1);
+	      long int dt = NTL::deg(r0) - dr;
+	      long int du = 0;
+	      long int t = static_cast<long int> (m_t / 2);
+
+	      u1.SetLength(1);
+	      NTL::SetCoeff(u1, 0, 1);
+
+	      while(dr >= t + 1)
+		{
+		  for(long int j = dt; j >= 0; j--)
+		    {
+		      NTL::GetCoeff(c1, r0, dr + j);
+		      NTL::GetCoeff(c2, r1, dr);
+		      c3 = c1 * NTL::inv(c2);
+		      c1 = c3;
+
+		      if(!NTL::IsZero(c1))
+			{
+			  for(long int i = 0; i <= du; i++)
+			    {
+			      NTL::GetCoeff(c3, u0, i + j);
+			      NTL::GetCoeff(c4, u1, i);
+			      c3 = c3 + c1 * c4;
+			      NTL::SetCoeff(u0, i + j, c3);
+			    }
+
+			  for(long int i = 0; i <= dr; i++)
+			    {
+			      NTL::GetCoeff(c3, r0, i + j);
+			      NTL::GetCoeff(c4, r1, i);
+			      c3 = c3 + c1 * c4;
+			      NTL::SetCoeff(r0, i + j, c3);
+			    }
+			}
+		    }
+
+		  GF2EX = r0;
+		  r0 = r1;
+		  r1 = GF2EX;
+		  GF2EX = u0;
+		  u0 = u1;
+		  u1 = GF2EX;
+		  du = du + dt;
+		  dt = 1;
+		  NTL::GetCoeff(c3, r1, dr - dt);
+
+		  while(NTL::IsZero(c3))
+		    {
+		      dt++;
+		      NTL::GetCoeff(c3, r1, dr - dt);
+		    }
+
+		  dr -= dt;
+		}
+
+	      gamma = u1;
+	      beta = r1;
+	      NTL::rem(alpha, beta, m_privateKey->gZ());
+	      sigma = NTL::power(alpha, 2) +
+		NTL::power(gamma, 2) * m_privateKey->X();
+	    }
 	}
+
+      for(long int i = 0; i < n; i++)
+	if(NTL::IsZero(NTL::eval(sigma, m_privateKey->L()[i])))
+	  e[i] = 1;
+
+      ccar += e;
 
       NTL::vec_GF2 m;
       NTL::vec_GF2 mcar;
+      NTL::vec_GF2 vec_GF2;
 
-      mcar.SetLength(static_cast<long int> (m_k));
+      vec_GF2.SetLength(n);
+
+      for(long int i = 0; i < n; i++)
+	vec_GF2[i] = ccar[m_privateKey->swappingColumns()[i]];
+
+      long int k = static_cast<long int> (m_k);
+
+      mcar.SetLength(k);
+
+      for(long int i = 0; i < k; i++)
+	mcar[i] = vec_GF2[i + n - k];
+
       m = mcar * m_privateKey->Sinv();
 
       size_t plaintext_size = static_cast<size_t>
@@ -444,14 +547,15 @@ bool mcnoodle::decrypt(const std::stringstream &ciphertext,
       p = new char[plaintext_size];
       memset(p, 0, plaintext_size);
 
-      for(long int i = 0, k = 0; i < m.length(); k++)
+      for(long int i = 0, k = 0; i < static_cast<long int> (plaintext_size);
+	  i++)
 	{
 	  std::bitset<CHAR_BIT> b;
 
-	  for(long int j = 0; j < CHAR_BIT && i < m.length(); i++, j++)
-	    b[static_cast<size_t> (j)] = m[i] == 0 ? 0 : 1;
+	  for(long int j = 0; j < CHAR_BIT && k < m.length(); j++, k++)
+	    b[static_cast<size_t> (j)] = m[k] == 0 ? 0 : 1;
 
-	  p[k] = static_cast<char> (b.to_ulong());
+	  p[i] = static_cast<char> (b.to_ulong());
 	}
 
       plaintext << p;
@@ -543,8 +647,8 @@ bool mcnoodle::generatePrivatePublicKeys(void)
       m_privateKey = new mcnoodle_private_key(m_m, m_t);
       m_publicKey = new mcnoodle_public_key(m_m, m_t);
 
-      if(!NTL::deg(m_privateKey->gZ()))
-	return false;
+      if(!m_privateKey->ok() || !m_publicKey->ok())
+	throw std::exception();
 
       /*
       ** Create the parity-check matrix H.
@@ -552,7 +656,7 @@ bool mcnoodle::generatePrivatePublicKeys(void)
 
       NTL::mat_GF2 H;
       long int m = static_cast<long int> (m_m);
-      long int n = m_privateKey->L().length();
+      long int n = static_cast<long int> (m_n);
       long int t = static_cast<long int> (m_t);
 
       H.SetDims(m * t, n);
@@ -567,7 +671,7 @@ bool mcnoodle::generatePrivatePublicKeys(void)
 
 	    for(long int k = 0; k < v.length(); k++)
 	      H[i * m + k][j] = v[k];
-      }
+	  }
 
       NTL::gauss(H);
 
@@ -610,6 +714,8 @@ bool mcnoodle::generatePrivatePublicKeys(void)
 
 	  lead += 1;
 	}
+
+    done_label:
 
       /*
       ** H = [I|R], systematic form.
@@ -657,9 +763,9 @@ bool mcnoodle::generatePrivatePublicKeys(void)
 
       mat_GF2.SetDims(H.NumRows(), H.NumCols());
 
-      for(long int i = 0; i < H.NumRows(); i++)
-	for(long int j = 0; j < H.NumCols(); j++)
-	  mat_GF2[i][j] = H[i][m_privateKey->swappingColumns()[j]];
+      for(long int i = 0; i < n; i++)
+	for(long int j = 0; j < m * t; j++)
+	  mat_GF2[j][i] = H[j][m_privateKey->swappingColumns()[i]];
 
       H = mat_GF2;
 
@@ -669,7 +775,7 @@ bool mcnoodle::generatePrivatePublicKeys(void)
 
       for(long int i = 0; i < R.NumRows(); i++)
 	for(long int j = 0; j < R.NumCols(); j++)
-	  R[i][j] = H[i][j + (n - m * t)];
+	  R[i][j] = H[i][j + m * t];
 
       R = NTL::transpose(R);
       m_privateKey->prepareG(R);
@@ -685,7 +791,6 @@ bool mcnoodle::generatePrivatePublicKeys(void)
       return false;
     }
 
- done_label:
   return true;
 }
 
