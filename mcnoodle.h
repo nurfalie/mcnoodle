@@ -3,7 +3,7 @@
 ** All rights reserved.
 **
 ** Software based on specifications provided by Antoon Bosselaers,
-** René Govaerts, Robert, McEliece, Bart Preneel, Marek Repka,
+** René Govaerts, Robert McEliece, Bart Preneel, Marek Repka,
 ** Christopher Roering, Joos Vandewalle.
 **
 ** Redistribution and use in source and binary forms, with or without
