@@ -1,3 +1,7 @@
+/*
+** Miss M.
+*/
+
 extern "C"
 {
 #include <stdio.h>
@@ -32,7 +36,7 @@ int test1(void)
 int test2(void)
 {
   int rc = 1;
-  mcnoodle m(12, 200);
+  mcnoodle m(13, 115);
 
   rc = m.generatePrivatePublicKeys();
 

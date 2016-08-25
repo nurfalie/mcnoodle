@@ -385,24 +385,6 @@ mcnoodle::mcnoodle(const size_t m,
     }
 }
 
-mcnoodle::mcnoodle(const size_t m,
-		   const size_t t,
-		   const std::stringstream &G,
-		   const std::stringstream &P,
-		   const std::stringstream &S)
-{
-  m_privateKey = 0;
-  m_publicKey = 0;
-
-  try
-    {
-      initializeSystemParameters(m, t);
-    }
-  catch(...)
-    {
-    }
-}
-
 mcnoodle::~mcnoodle()
 {
   delete m_privateKey;
@@ -823,29 +805,4 @@ bool mcnoodle::generatePrivatePublicKeys(void)
     }
 
   return true;
-}
-
-void mcnoodle::privateKeyParameters(std::stringstream &G,
-				    std::stringstream &P,
-				    std::stringstream &Pinv,
-				    std::stringstream &S,
-				    std::stringstream &Sinv)
-{
-  if(!m_privateKey)
-    return;
-
-  G << m_privateKey->G();
-  P << m_privateKey->P();
-  Pinv << m_privateKey->Pinv();
-  S << m_privateKey->S();
-  Sinv << m_privateKey->Sinv();
-}
-
-void mcnoodle::publicKeyParameters(size_t &t, std::stringstream &Gcar)
-{
-  if(m_publicKey)
-    {
-      Gcar << m_publicKey->Gcar();
-      t = m_t;
-    }
 }

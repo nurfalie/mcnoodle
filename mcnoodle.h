@@ -172,11 +172,6 @@ class mcnoodle
 {
  public:
   mcnoodle(const size_t m, const size_t t);
-  mcnoodle(const size_t m,
-	   const size_t t,
-	   const std::stringstream &G,
-	   const std::stringstream &P,
-	   const std::stringstream &S);
   ~mcnoodle();
   bool decrypt(const std::stringstream &ciphertext,
 	       std::stringstream &plaintext);
@@ -206,13 +201,6 @@ class mcnoodle
 
     m_k = m_n - m_m * m_t;
   }
-
-  void privateKeyParameters(std::stringstream &G,
-			    std::stringstream &P,
-			    std::stringstream &Pinv,
-			    std::stringstream &S,
-			    std::stringstream &Sinv);
-  void publicKeyParameters(size_t &t, std::stringstream &Gcar);
 
  private:
   mcnoodle_private_key *m_privateKey;
