@@ -36,7 +36,7 @@ int test1(void)
 int test2(void)
 {
   int rc = 1;
-  mcnoodle m(13, 115);
+  mcnoodle m(11, 115);
 
   rc = m.generatePrivatePublicKeys();
 
