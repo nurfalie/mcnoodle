@@ -119,7 +119,6 @@ class mcnoodle_private_key
   void swapSwappingColumns(const long int i, const long int j);
 
  private:
-  NTL::GF2E m_A;
   NTL::GF2EX m_X;
   NTL::GF2EX m_gZ;
   NTL::mat_GF2 m_G;

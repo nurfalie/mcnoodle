@@ -64,6 +64,8 @@ mcnoodle_private_key::mcnoodle_private_key(const size_t m, const size_t t)
     if((n - 1) % i == 0)
       dividers.push_back(i);
 
+  NTL::GF2E A = NTL::GF2E::zero();
+
   for(long int i = 2; i < n; i++)
     {
       NTL::GF2E gf2e;
@@ -80,7 +82,7 @@ mcnoodle_private_key::mcnoodle_private_key(const size_t m, const size_t t)
 
 	NTL::SetCoeff(gf2x, j, NTL::RandomBnd(2));
 
-      gf2e = m_A = NTL::to_GF2E(gf2x);
+      A = gf2e = NTL::to_GF2E(gf2x);
 
       for(int long j = 0; j < static_cast<long int> (dividers.size()); j++)
 	if(NTL::power(gf2e, dividers[j]) == NTL::to_GF2E(1))
@@ -91,7 +93,7 @@ mcnoodle_private_key::mcnoodle_private_key(const size_t m, const size_t t)
 
       if(found)
 	{
-	  m_A = gf2e;
+	  A = gf2e;
 	  break;
 	}
     }
@@ -102,9 +104,9 @@ mcnoodle_private_key::mcnoodle_private_key(const size_t m, const size_t t)
     if(i == 0)
       m_L[i] = NTL::GF2E::zero(); // Lambda-0 is always zero.
     else if(i == 1)
-      m_L[i] = m_A; // Discovered generator.
+      m_L[i] = A; // Discovered generator.
     else
-      m_L[i] = m_A * m_L[i - 1];
+      m_L[i] = A * m_L[i - 1];
 
   preparePreSynTab();
 }
