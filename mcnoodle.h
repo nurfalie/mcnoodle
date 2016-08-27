@@ -192,7 +192,7 @@ class mcnoodle
   {
     m_m = minimumM(m);
     m_n = 1 << m_m; // 2^m
-    m_t = minimumM(t);
+    m_t = minimumT(t);
 
     /*
     ** Some calculations.
