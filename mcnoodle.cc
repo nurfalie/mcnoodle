@@ -443,10 +443,11 @@ bool mcnoodle::decrypt(const std::stringstream &ciphertext,
 
       NTL::GF2EX syndrome = NTL::GF2EX::zero();
       long int n = static_cast<long int> (m_n);
+      std::vector<NTL::GF2EX> v(m_privateKey->preSynTab());
 
       for(long int i = 0; i < n; i++)
 	if(ccar[i] != 0)
-	  syndrome += m_privateKey->preSynTab()[i];
+	  syndrome += v[i];
 
       NTL::GF2EX sigma = NTL::GF2EX::zero();
 
@@ -542,11 +543,12 @@ bool mcnoodle::decrypt(const std::stringstream &ciphertext,
 	}
 
       NTL::vec_GF2 e;
+      NTL::vec_GF2E L = m_privateKey->L();
 
       e.SetLength(n);
 
       for(long int i = 0; i < n; i++)
-	if(NTL::IsZero(NTL::eval(sigma, m_privateKey->L()[i])))
+	if(NTL::IsZero(NTL::eval(sigma, L[i])))
 	  e[i] = 1;
 
       ccar += e;
@@ -554,11 +556,12 @@ bool mcnoodle::decrypt(const std::stringstream &ciphertext,
       NTL::vec_GF2 m;
       NTL::vec_GF2 mcar;
       NTL::vec_GF2 vec_GF2;
+      std::vector<long int> swappingColumns(m_privateKey->swappingColumns());
 
       vec_GF2.SetLength(n);
 
       for(long int i = 0; i < n; i++)
-	vec_GF2[i] = ccar[m_privateKey->swappingColumns()[i]];
+	vec_GF2[i] = ccar[swappingColumns[i]];
 
       long int k = static_cast<long int> (m_k);
 
@@ -687,7 +690,9 @@ bool mcnoodle::generatePrivatePublicKeys(void)
       ** Create the parity-check matrix H.
       */
 
+      NTL::GF2EX gZ = m_privateKey->gZ();
       NTL::mat_GF2 H;
+      NTL::vec_GF2E L = m_privateKey->L();
       long int m = static_cast<long int> (m_m);
       long int n = static_cast<long int> (m_n);
       long int t = static_cast<long int> (m_t);
@@ -697,9 +702,8 @@ bool mcnoodle::generatePrivatePublicKeys(void)
       for(long int i = 0; i < t; i++)
 	for(long int j = 0; j < n; j++)
 	  {
-	    NTL::GF2E gf2e = NTL::inv(NTL::eval(m_privateKey->gZ(),
-						m_privateKey->L()[j])) *
-	      NTL::power(m_privateKey->L()[j], i);
+	    NTL::GF2E gf2e = NTL::inv(NTL::eval(gZ, L[j])) *
+	      NTL::power(L[j], i);
 	    NTL::vec_GF2 v = NTL::to_vec_GF2(gf2e._GF2E__rep);
 
 	    for(long int k = 0; k < v.length(); k++)
@@ -793,12 +797,13 @@ bool mcnoodle::generatePrivatePublicKeys(void)
 	  }
 
       NTL::mat_GF2 mat_GF2;
+      std::vector<long int> swappingColumns(m_privateKey->swappingColumns());
 
       mat_GF2.SetDims(H.NumRows(), H.NumCols());
 
       for(long int i = 0; i < n; i++)
 	for(long int j = 0; j < m * t; j++)
-	  mat_GF2[j][i] = H[j][m_privateKey->swappingColumns()[i]];
+	  mat_GF2[j][i] = H[j][swappingColumns[i]];
 
       H = mat_GF2;
 
