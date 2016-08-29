@@ -9,21 +9,30 @@ extern "C"
 #include <string.h>
 }
 
+#include <ctime>
+
 #include "mcnoodle.h"
 
 int test1(void)
 {
   int rc = 1;
-  mcnoodle m(11, 115);
+  mcnoodle m(11, 51);
 
   rc = m.generatePrivatePublicKeys();
 
-  char plaintext[] = "The test is empty.";
+  char plaintext[] = "The encoding of calendar time in std::time_t "
+    "is unspecified, but most systems conform to POSIX specification.";
   std::stringstream c;
   std::stringstream p;
 
+  std::cout << "encrypt() before: "
+	    << std::time(0) << "." << std::endl;
   rc &= m.encrypt(plaintext, strlen(plaintext), c);
+  std::cout << "decrypt() before: "
+	    << std::time(0) << "." << std::endl;
   rc &= m.decrypt(c, p);
+  std::cout << "decrypt() after: "
+	    << std::time(0) << "." << std::endl;
 
   if(rc &= (p.str() == std::string(plaintext)))
     std::cout << "p equals plaintext!" << std::endl;
@@ -36,7 +45,7 @@ int test1(void)
 int test2(void)
 {
   int rc = 1;
-  mcnoodle m(11, 115);
+  mcnoodle m(11, 51);
 
   rc = m.generatePrivatePublicKeys();
 

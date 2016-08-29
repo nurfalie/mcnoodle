@@ -449,9 +449,6 @@ bool mcnoodle::decrypt(const std::stringstream &ciphertext,
 	  syndrome += m_privateKey->preSynTab()[i];
 
       NTL::GF2EX sigma = NTL::GF2EX::zero();
-      NTL::vec_GF2 e;
-
-      e.SetLength(n);
 
       if(!NTL::IsZero(syndrome))
 	{
@@ -475,7 +472,7 @@ bool mcnoodle::decrypt(const std::stringstream &ciphertext,
 	      NTL::GF2E c2;
 	      NTL::GF2E c3;
 	      NTL::GF2E c4;
-	      NTL::GF2EX GF2EX = NTL::GF2EX::zero();
+	      NTL::GF2EX gf2ex = NTL::GF2EX::zero();
 	      NTL::GF2EX r0 = m_privateKey->gZ();
 	      NTL::GF2EX r1 = tau;
 	      NTL::GF2EX u0 = NTL::GF2EX::zero();
@@ -517,12 +514,12 @@ bool mcnoodle::decrypt(const std::stringstream &ciphertext,
 			}
 		    }
 
-		  GF2EX = r0;
+		  gf2ex = r0;
 		  r0 = r1;
-		  r1 = GF2EX;
-		  GF2EX = u0;
+		  r1 = gf2ex;
+		  gf2ex = u0;
 		  u0 = u1;
-		  u1 = GF2EX;
+		  u1 = gf2ex;
 		  du = du + dt;
 		  dt = 1;
 		  NTL::GetCoeff(c3, r1, dr - dt);
@@ -543,6 +540,10 @@ bool mcnoodle::decrypt(const std::stringstream &ciphertext,
 		NTL::power(gamma, 2) * m_privateKey->X();
 	    }
 	}
+
+      NTL::vec_GF2 e;
+
+      e.SetLength(n);
 
       for(long int i = 0; i < n; i++)
 	if(NTL::IsZero(NTL::eval(sigma, m_privateKey->L()[i])))
