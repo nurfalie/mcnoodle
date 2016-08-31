@@ -77,7 +77,8 @@ mcnoodle_private_key::mcnoodle_private_key(const size_t m, const size_t t)
 
       for(long int j = 0; j < static_cast<long int> (m); j++)
 	/*
-	** 0 or 1, selected randomly.
+	** 0 or 1, selected randomly. This has the potential
+	** of introducing divisions by zero. Only a test library!
 	*/
 
 	NTL::SetCoeff(gf2x, j, NTL::RandomBnd(2));
@@ -239,6 +240,10 @@ bool mcnoodle_private_key::preparePreSynTab(void)
       m_preSynTab.clear();
 
       for(long int i = 0; i < n; i++)
+	/*
+	** Division by zero will occur if m_X - m_L[i] equals zero.
+	**/
+
 	m_preSynTab.push_back(NTL::InvMod(m_X - m_L[i], m_gZ));
     }
   catch(...)
