@@ -244,7 +244,10 @@ bool mcnoodle_private_key::preparePreSynTab(void)
 	** Division by zero will occur if m_X - m_L[i] equals zero.
 	**/
 
-	m_preSynTab.push_back(NTL::InvMod(m_X - m_L[i], m_gZ));
+	if(!NTL::IsZero(m_X - m_L[i]))
+	  m_preSynTab.push_back(NTL::InvMod(m_X - m_L[i], m_gZ));
+	else
+	  m_preSynTab.push_back(m_X);
     }
   catch(...)
     {
