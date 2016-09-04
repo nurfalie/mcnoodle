@@ -1,0 +1,25 @@
+CXXFLAGS = -O3 -Wall -Werror -Wextra \
+	   -Wformat=2 -Wno-unused-function -Wno-unused-parameter \
+	   -Wpointer-arith -Wstrict-overflow=1
+DEFINES	= -DMCNOODLE_ASSUME_SAFE_PARAMETERS=1 \
+	  -DMCNOODLE_OS_UNIX=1
+
+INCLUDES = -I /usr/local/include
+LIBRARIES = -L /usr/local/lib -lgmp -lntl
+
+OBJECT_FILES = mcnoodle.o
+
+all:	$(OBJECT_FILES)
+	$(CXX) $(CXXFLAGS) $(DEFINES) $(INCLUDES) \
+	$(OBJECT_FILES) test.cc -o test $(LIBRARIES)
+
+mcnoodle.o: mcnoodle.cc mcnoodle.h
+	$(CXX) $(CXXFLAGS) $(DEFINES) $(INCLUDES) -c mcnoodle.cc -o mcnoodle.o
+clean:
+	rm -f *.o
+	rm -f test
+
+distclean: clean
+
+purge:
+	rm -f *~*
