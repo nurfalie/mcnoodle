@@ -22,22 +22,26 @@ int test1(void)
 
   char plaintext[] = "The encoding of calendar time in std::time_t "
     "is unspecified, but most systems conform to POSIX specification.";
-  std::stringstream c;
-  std::stringstream p;
 
-  std::cout << "encrypt() before: "
-	    << std::time(0) << "." << std::endl;
-  rc &= m.encrypt(plaintext, strlen(plaintext), c);
-  std::cout << "decrypt() before: "
-	    << std::time(0) << "." << std::endl;
-  rc &= m.decrypt(c, p);
-  std::cout << "decrypt() after: "
-	    << std::time(0) << "." << std::endl;
+  for(int i = 1; i <= 10; i++)
+    {
+      std::stringstream c;
+      std::stringstream p;
 
-  if(rc &= (p.str() == std::string(plaintext)))
-    std::cout << "p equals plaintext!" << std::endl;
-  else
-    std::cout << "p does not equal plaintext!" << std::endl;
+      std::cout << "encrypt() before: "
+		<< std::time(0) << "." << std::endl;
+      rc &= m.encrypt(plaintext, strlen(plaintext), c);
+      std::cout << "decrypt() before: "
+		<< std::time(0) << "." << std::endl;
+      rc &= m.decrypt(c, p);
+      std::cout << "decrypt() after: "
+		<< std::time(0) << "." << std::endl;
+
+      if(rc &= (p.str() == std::string(plaintext)))
+	std::cout << "p equals plaintext!" << std::endl;
+      else
+	std::cout << "p does not equal plaintext!" << std::endl;
+    }
 
   return rc;
 }
