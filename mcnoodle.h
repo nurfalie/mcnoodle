@@ -173,9 +173,9 @@ class mcnoodle
   mcnoodle(const size_t m, const size_t t);
   ~mcnoodle();
   bool decrypt(const std::stringstream &ciphertext,
-	       std::stringstream &plaintext);
+	       std::stringstream &plaintext) const;
   bool encrypt(const char *plaintext, const size_t plaintext_size,
-	       std::stringstream &ciphertext);
+	       std::stringstream &ciphertext) const;
   bool generatePrivatePublicKeys(void);
 
   static size_t minimumM(const size_t m)

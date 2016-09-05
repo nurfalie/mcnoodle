@@ -402,7 +402,7 @@ mcnoodle::~mcnoodle()
 }
 
 bool mcnoodle::decrypt(const std::stringstream &ciphertext,
-		       std::stringstream &plaintext)
+		       std::stringstream &plaintext) const
 {
   if(!m_privateKey || !m_privateKey->ok())
     return false;
@@ -607,7 +607,7 @@ bool mcnoodle::decrypt(const std::stringstream &ciphertext,
 
 bool mcnoodle::encrypt(const char *plaintext,
 		       const size_t plaintext_size,
-		       std::stringstream &ciphertext)
+		       std::stringstream &ciphertext) const
 {
   if(!m_publicKey || !m_publicKey->ok() || !plaintext || plaintext_size <= 0)
     return false;
