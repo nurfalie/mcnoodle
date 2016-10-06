@@ -9,6 +9,7 @@ extern "C"
 #include <string.h>
 }
 
+#include <NTL/version.h>
 #include <ctime>
 
 #include "mcnoodle.h"
