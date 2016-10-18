@@ -1,7 +1,7 @@
 McEliece asymmetric encryption. Nonsensical nonsense.
 
-The implementation is based on the included documents (papers.d). Divisions
-by zero may occur. If this is a concern, please see
+The implementation is based on the included documents and software (papers.d).
+Divisions by zero may occur. If this is a concern, please see
 mcnoodle_private_key::mcnoodle_private_key() and adjust the
 generator-discovery algorithm.
 
